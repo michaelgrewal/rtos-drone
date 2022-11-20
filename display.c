@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
 	char smsg[MAX_STRING_LEN];
 	char rmsg[MAX_STRING_LEN];
 	int coid;
-	printf("Hi I'm display HUD client.\n");
+	printf("[D] Hi I'm display HUD client.\n");
 
 	//set the message value to 'test'
 	strcpy(smsg, "test");
@@ -25,7 +25,8 @@ int main(int argc, char* argv[])
 	MsgSend(coid, &smsg, sizeof(smsg), &rmsg, sizeof(rmsg));
 
     //print received checksum
-	printf("Client: Received %s\n", rmsg);
+    
+	printf("[D] Received message: %s\n", rmsg);
 
 
     //Close a server connection that was opened by name_open()
