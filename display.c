@@ -25,6 +25,7 @@ int main(int argc, char* argv[])
 	MsgSend(coid, &smsg, sizeof(smsg), &rmsg, sizeof(rmsg));
 
     //print received checksum
+    
 	printf("[D] Received message: %s\n", rmsg);
 
 
