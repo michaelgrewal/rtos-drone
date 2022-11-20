@@ -1,6 +1,6 @@
 #ifndef MAIN_H_
 #define MAIN_H_
 
-#define ARR_SIZE 16
+#define NUM_PROCS 2
 
 #endif
