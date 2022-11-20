@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 		//message
 		else {
 			printf("[FC] Received message: %s\n", msg.rmsg);
-			strcpy(reply_msg, "from server");
+			strcpy(reply_msg, "reply from server");
 			MsgReply(rcvid, EOK, &reply_msg, sizeof(reply_msg));
 		}
 
