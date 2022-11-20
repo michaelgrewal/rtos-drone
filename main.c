@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "main.h"
+#define NUM_PROCS 2
 
 int main(int argc, char **argv)
 {

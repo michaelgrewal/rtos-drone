@@ -7,9 +7,6 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 
-
-
-
 #include "flight_controller.h"
 
 
@@ -48,6 +45,7 @@ int create_shared_memory(int nbytes, void **ptr) {
 	return 0;
 }
 
+
 int main(int argc, char* argv[])
 {
 	printf("[FC] Hi I'm FC Server\n");
@@ -55,6 +53,7 @@ int main(int argc, char* argv[])
 	char reply_msg[MAX_STRING_LEN];
 	recv_buf_t msg;
 	void *ptr;
+
 
 	name_attach_t *attach;
 	attach = name_attach(NULL, SERVER_NAME, 0);

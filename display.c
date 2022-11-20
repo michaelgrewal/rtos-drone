@@ -6,10 +6,9 @@
 #include <sys/dispatch.h>
 #include <fcntl.h>
 #include <sys/mman.h>
-
-
 #include "display.h"
 #include "flight_controller.h"
+
 
 
 int main(int argc, char* argv[])
