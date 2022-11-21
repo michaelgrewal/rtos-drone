@@ -9,11 +9,6 @@
 #include "propeller.h"
 #include "flight_controller.h"
 
-int speed1, speed2, speed3, speed4;
-volatile int state = 1;
-
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 void *prop1(void *);
 void *prop2(void *);
@@ -24,97 +19,81 @@ void *prop4(void *);
 
 
 int main(void) {
+	const char *shmem_props[] = {"prop1", "prop2", "prop3", "prop4"};
+	const void *funcs[] = {&prop1, &prop2, &prop3, &prop4};
 
-	int fd;
+	int fd, i;
 	void *ptr;
-	printf("[P] Hi I'm propeller client.\n");
+//	printf("[P] Hi I'm propeller client.\n");
 
-	fd = shm_open(SHM_NAME, O_RDWR, 0);
-	if (fd == -1) {
-		perror("shm_open() failed");
-		return EXIT_FAILURE;
+	for (i = 0; i < NUM_PROPS; i++) {
+		fd = shm_open(shmem_props[i], O_RDWR|O_CREAT|O_TRUNC, 0600);
+		if (fd == -1) {
+			perror("shm_open() in propellers failed");
+			return EXIT_FAILURE;
+		}
+		if (ftruncate(fd, sizeof(int)) == -1) {
+			perror("ftruncate failed\n");
+			return EXIT_FAILURE;
+		}
+		ptr = mmap(NULL, sizeof(int), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+		if (ptr == MAP_FAILED) {
+			perror("mmap failed\n");
+			return EXIT_FAILURE;
+		}
+		close(fd);
+
+		pthread_attr_t attr;
+		pthread_attr_init(&attr);
+		pthread_attr_setschedpolicy(&attr, SCHED_RR);
+		pthread_create(NULL, &attr, funcs[i], ptr);
 	}
-	ptr = mmap(NULL, PAGE_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-	close(fd);
-	sleep(2);
-
-	pthread_create(NULL, NULL, &prop1, ptr);
-	pthread_create(NULL, NULL, &prop2, ptr);
-	pthread_create(NULL, NULL, &prop3, ptr);
-	pthread_create(NULL, NULL, &prop4, ptr);
-
 	sleep(5);
-
 	return 0;
 }
 
-void update_shmem(void* ptr, int speed, int n) {
-	int i = n-1;
-	((int *)ptr)[i] = speed;
+void update_shmem(void* ptr, int speed) {
+	*(int *)ptr = speed;
 }
 
 
 void* prop1(void* ptr) {
+	int speed1;
+
 	while (1)
 	{
-		pthread_mutex_lock(&mutex);
-		while(state != 1)
-		{
-			pthread_cond_wait(&cond, &mutex);
-		}
 		speed1 = 555;
-		update_shmem(ptr, speed1, state);
-		state = 2;
-		pthread_cond_broadcast(&cond);
-		pthread_mutex_unlock(&mutex);
+		update_shmem(ptr, speed1);
 	}
 }
 
 void* prop2(void* ptr) {
+	int speed2;
+
 	while (1)
 	{
-		pthread_mutex_lock(&mutex);
-		while(state != 2)
-		{
-			pthread_cond_wait(&cond, &mutex);
-		}
 		speed2 = 666;
-		update_shmem(ptr, speed2, state);
-		state = 3;
-		pthread_cond_broadcast(&cond);
-		pthread_mutex_unlock(&mutex);
+		update_shmem(ptr, speed2);
 	}
 }
 
 void* prop3(void* ptr) {
+	int speed3;
+
 	while (1)
 	{
-		pthread_mutex_lock(&mutex);
-		while(state != 3)
-		{
-			pthread_cond_wait(&cond, &mutex);
-		}
 		speed3 = 777;
-		update_shmem(ptr, speed3, state);
-		state = 4;
-		pthread_cond_broadcast(&cond);
-		pthread_mutex_unlock(&mutex);
+		update_shmem(ptr, speed3);
 	}
 }
 
 void* prop4(void* ptr) {
+	int speed4;
+
 	while (1)
 	{
-		pthread_mutex_lock(&mutex);
-		while(state != 4)
-		{
-			pthread_cond_wait(&cond, &mutex);
-		}
 		speed4 = 888;
-		update_shmem(ptr, speed4, state);
-		state = 1;
-		pthread_cond_broadcast(&cond);
-		pthread_mutex_unlock(&mutex);
+		update_shmem(ptr, speed4);
 	}
 }
 

@@ -16,7 +16,7 @@ TARGET = -Vgcc_ntox86_64
 
 CFLAGS += $(DEBUG) $(TARGET) -Wall
 LDFLAGS+= $(DEBUG) $(TARGET)
-BINS = main flight_controller display propeller
+BINS = main flight_controller display propeller sensor
 all: $(BINS)
 
 clean:
@@ -28,4 +28,5 @@ main.o: main.c main.h
 flight_controller.o: flight_controller.c flight_controller.h
 display.o: display.c display.h
 propeller.o: propeller.c propeller.h
+sensor.o: sensor.c sensor.h
 
