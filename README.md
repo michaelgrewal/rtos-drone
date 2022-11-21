@@ -1,6 +1,16 @@
 # rtos-drone
 RTOS Drone Quadcopter project COMP4900 with QNX Neutrino
 
+Instructions:
+1. Open Momentics with QNX Neutrino Target VM ready and connected.
+2. Import source code into Momentics project.
+3. Right click on "rtos-drone" folder in Project Explorer.
+4. Click "Build Project".
+5. Copy all executable binaries into target VM.
+6. Run "./main" on target VM.
+
+Explanation:
+
 - Main spawns all necessary processes: Flight Controller, Display, Properllers, Sensors.
 - Flight Controller (Server) shares memory chunk with Display Process
 - Display periodically reads from shared memory and updates HUD
