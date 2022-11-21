@@ -7,13 +7,12 @@
 #include <string.h>
 
 #include "main.h"
-#define NUM_PROCS 2
 
 int main(int argc, char **argv)
 {
 	int i, status;
 	pid_t pid;
-	char *procs[] = {"flight_controller", "display"};
+	char *procs[] = {"flight_controller", "display", "propeller"};
 
 	for(i = 0; i < NUM_PROCS; i++) {
 		char	*args[] = { procs[i], NULL };

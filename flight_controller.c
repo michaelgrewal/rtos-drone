@@ -62,7 +62,11 @@ int main(int argc, char* argv[])
 		perror("create_shared_memory() failed");
 		exit(EXIT_FAILURE);
 	}
-	strcpy((char *)ptr, "111-222-333-444");
+	((int*)ptr)[0] = 111;
+	((int*)ptr)[1] = 222;
+	((int*)ptr)[2] = 333;
+	((int*)ptr)[3] = 444;
+
 
 
 	while(1)
