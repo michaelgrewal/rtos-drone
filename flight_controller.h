@@ -10,7 +10,4 @@
 #define _PULSE_CODE_UPDATE_SPEED3 3
 #define _PULSE_CODE_UPDATE_SPEED4 4
 
-
-
-
 #endif /* FLIGHT_CONTROLLER_H_ */

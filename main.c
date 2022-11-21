@@ -8,12 +8,14 @@
 
 #include "main.h"
 
+// Parent main process to initiate the Drone
 int main(int argc, char **argv)
 {
 	int i, status;
 	pid_t pid;
 	char *procs[] = {"flight_controller", "display", "propeller", "sensor"};
 
+	// spawn each subprocess
 	for(i = 0; i < NUM_PROCS; i++) {
 		char	*args[] = { procs[i], NULL };
 
@@ -22,6 +24,7 @@ int main(int argc, char **argv)
 
 	}
 
+	// wait for child processes to return
 	while (1) {
 		if ((pid = wait(&status)) == -1) {
 			perror("wait() failed (no more child processes?)");
