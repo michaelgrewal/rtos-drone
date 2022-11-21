@@ -12,7 +12,7 @@ int main(int argc, char **argv)
 {
 	int i, status;
 	pid_t pid;
-	char *procs[] = {"flight_controller", "display", "propeller"};
+	char *procs[] = {"flight_controller", "display", "propeller", "sensor"};
 
 	for(i = 0; i < NUM_PROCS; i++) {
 		char	*args[] = { procs[i], NULL };

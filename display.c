@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 {
 	int fd;
 	void *ptr;
-	printf("[D] Hi I'm display HUD.\n");
+//	printf("[D] Hi I'm display HUD.\n");
 
 	fd = shm_open(SHM_NAME, O_RDONLY, 0);
 	if (fd == -1) {
@@ -26,13 +26,12 @@ int main(int argc, char* argv[])
 	ptr = mmap(NULL, PAGE_SIZE, PROT_READ, MAP_SHARED, fd, 0);
 	close(fd);
 
-	sleep(1);
-	printf("[D] Reads Speed1: %d, Speed2: %d, Speed3: %d, Speed4: %d", ((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3]);
-	fflush(stdout);
-	sleep(3);
-
-	printf("\r[D] Reads Speed1: %d, Speed2: %d, Speed3: %d, Speed4: %d", ((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3]);
-	fflush(stdout);
+	while(1)
+	{
+		printf("\r[D] Reads Speed1: %d, Speed2: %d, Speed3: %d, Speed4: %d", ((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3]);
+		fflush(stdout);
+		sleep(1);
+	}
 
     return EXIT_SUCCESS;
 }

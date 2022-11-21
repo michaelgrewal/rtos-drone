@@ -22,7 +22,7 @@ int create_shared_memory(int nbytes, void **ptr) {
 
 	fd = shm_open(SHM_NAME, O_RDWR|O_CREAT|O_TRUNC, 0600);
 	if (fd == -1) {
-		perror("shm_open failed\n");
+		perror("shm_open in fc failed\n");
 		return EXIT_FAILURE;
 	}
 
@@ -48,7 +48,7 @@ int create_shared_memory(int nbytes, void **ptr) {
 
 int main(int argc, char* argv[])
 {
-	printf("[FC] Hi I'm FC Server\n");
+//	printf("[FC] Hi I'm FC Server\n");
 	int rcvid;
 	char reply_msg[MAX_STRING_LEN];
 	recv_buf_t msg;
@@ -62,10 +62,10 @@ int main(int argc, char* argv[])
 		perror("create_shared_memory() failed");
 		exit(EXIT_FAILURE);
 	}
-	((int*)ptr)[0] = 111;
-	((int*)ptr)[1] = 222;
-	((int*)ptr)[2] = 333;
-	((int*)ptr)[3] = 444;
+	((int*)ptr)[0] = 0;
+	((int*)ptr)[1] = 0;
+	((int*)ptr)[2] = 0;
+	((int*)ptr)[3] = 0;
 
 
 
@@ -76,11 +76,22 @@ int main(int argc, char* argv[])
 		//pulse
 		if (rcvid == 0) {
 			switch (msg.pulse.code) {
-			case _PULSE_CODE_DISCONNECT:
-				printf("client is gone\n");
-				ConnectDetach(msg.pulse.scoid);
-				break;
-			}
+				case _PULSE_CODE_DISCONNECT:
+					ConnectDetach(msg.pulse.scoid);
+					break;
+				case _PULSE_CODE_UPDATE_SPEED1:
+					((int*)ptr)[0] = msg.pulse.value.sival_int;
+					break;
+				case _PULSE_CODE_UPDATE_SPEED2:
+					((int*)ptr)[1] = msg.pulse.value.sival_int;
+					break;
+				case _PULSE_CODE_UPDATE_SPEED3:
+					((int*)ptr)[2] = msg.pulse.value.sival_int;
+					break;
+				case _PULSE_CODE_UPDATE_SPEED4:
+					((int*)ptr)[3] = msg.pulse.value.sival_int;
+					break;
+				}
 		}
 		//message
 		else {
