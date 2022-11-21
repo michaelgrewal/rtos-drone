@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 {
 	int fd;
 	void *ptr;
-	printf("[D] Hi I'm display HUD client.\n");
+	printf("[D] Hi I'm display HUD.\n");
 
 	fd = shm_open(SHM_NAME, O_RDONLY, 0);
 	if (fd == -1) {
@@ -24,10 +24,13 @@ int main(int argc, char* argv[])
 	}
 
 	ptr = mmap(NULL, PAGE_SIZE, PROT_READ, MAP_SHARED, fd, 0);
+	close(fd);
 
-	sleep(2);
-	printf("[D] Reads %s\n", (char *)ptr);
+	printf("[D] Reads Speed1: %d, Speed2: %d, Speed3: %d, Speed4: %d\n", ((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3]);
 
+	sleep(3);
+
+	printf("[D] Reads Speed1: %d, Speed2: %d, Speed3: %d, Speed4: %d\n", ((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3]);
 
 	//set the message value to 'test'
 //	strcpy(smsg, "test");

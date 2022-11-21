@@ -2,7 +2,7 @@
 #define MAIN_H_
 
 
-#define NUM_PROCS 2
+#define NUM_PROCS 3
 
 
 #endif
