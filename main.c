@@ -13,6 +13,8 @@ int main(int argc, char **argv)
 {
 	int i, status;
 	pid_t pid;
+
+	// array of all procs that need to start
 	char *procs[] = {"flight_controller", "display", "propeller", "sensor"};
 
 	// spawn each subprocess

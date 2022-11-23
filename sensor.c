@@ -70,59 +70,48 @@ int main(void) {
 	return 0;
 }
 
-// send pulse to server with updated speed value
-void send_speed_to_server(int coid, int speed, int code) {
+// read updated speed value and send pulse to server
+void send_speed_to_server(int coid, void *ptr, int code) {
+	int speed;
+	speed = *(int *)ptr;
 	MsgSendPulse(coid, -1, code, speed);
-}
-
-// read the propeller's current speed
-int read_prop_speed(void *ptr) {
-	return *(int *)ptr;
 }
 
 // thread functions
 // each sensor shares the same connection id to the server and send the respective propeller speed value in a pulse
 void* sens1(void* args) {
 	struct thread_args *th_args = args;
-	int speed1;
 
 	while (1)
 	{
-		speed1 = read_prop_speed(th_args->ptr);
-		send_speed_to_server(th_args->coid, speed1, _PULSE_CODE_UPDATE_SPEED1);
+		send_speed_to_server(th_args->coid, th_args->ptr, _PULSE_CODE_UPDATE_SPEED1);
 	}
 }
 
 void* sens2(void* args) {
 	struct thread_args *th_args = args;
-	int speed2;
 
 	while (1)
 	{
-		speed2 = read_prop_speed(th_args->ptr);
-		send_speed_to_server(th_args->coid, speed2, _PULSE_CODE_UPDATE_SPEED2);
+		send_speed_to_server(th_args->coid, th_args->ptr, _PULSE_CODE_UPDATE_SPEED2);
 	}
 }
 
 void* sens3(void* args) {
 	struct thread_args *th_args = args;
-	int speed3;
 
 	while (1)
 	{
-		speed3 = read_prop_speed(th_args->ptr);
-		send_speed_to_server(th_args->coid, speed3, _PULSE_CODE_UPDATE_SPEED3);
+		send_speed_to_server(th_args->coid, th_args->ptr, _PULSE_CODE_UPDATE_SPEED3);
 	}
 }
 
 void* sens4(void* args) {
 	struct thread_args *th_args = args;
-	int speed4;
 
 	while (1)
 	{
-		speed4 = read_prop_speed(th_args->ptr);
-		send_speed_to_server(th_args->coid, speed4, _PULSE_CODE_UPDATE_SPEED4);
+		send_speed_to_server(th_args->coid, th_args->ptr, _PULSE_CODE_UPDATE_SPEED4);
 	}
 }
 
