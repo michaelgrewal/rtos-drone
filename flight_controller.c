@@ -17,6 +17,8 @@ typedef union
 	char rmsg[MAX_STRING_LEN];
 } recv_buf_t;
 
+
+
 // creates shared memory to store all propeller speed data
 int create_shared_memory(int nbytes, void **ptr) {
 	int fd;
@@ -48,6 +50,8 @@ int create_shared_memory(int nbytes, void **ptr) {
 }
 
 
+
+
 int main(int argc, char* argv[])
 {
 //	printf("[FC] Hi I'm FC Server\n");
@@ -65,11 +69,13 @@ int main(int argc, char* argv[])
 		perror("create_shared_memory() failed");
 		exit(EXIT_FAILURE);
 	}
-	// initialize all 4 propeller speeds
-	((int*)ptr)[0] = 0;
-	((int*)ptr)[1] = 0;
-	((int*)ptr)[2] = 0;
-	((int*)ptr)[3] = 0;
+
+	// initialize drone data
+	((int*)ptr)[0] = 0;		// Propeller 1 speed
+	((int*)ptr)[1] = 0;		// Propeller 2 speed
+	((int*)ptr)[2] = 0;		// Propeller 3 speed
+	((int*)ptr)[3] = 0;		// Propeller 4 speed
+
 
 
 

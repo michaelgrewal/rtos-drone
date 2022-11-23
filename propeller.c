@@ -26,7 +26,12 @@ int main(void) {
 	void *ptr;
 //	printf("[P] Hi I'm propeller client.\n");
 
-	// create shared memory for each propeller to store speed data into
+
+	/*
+	 * allocate memory for each propeller to store speed data into, and share with sensors that have read access into.
+	 * this is separate from the flight controller shared memory.
+	 * propellers individually store their speed locally, then sensors read it, and send it to flight controller where it gets stored into the "central" memory
+	 */
 	for (i = 0; i < NUM_PROPS; i++) {
 
 		// create named shared memory
