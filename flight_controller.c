@@ -69,11 +69,13 @@ int main(int argc, char* argv[])
 		perror("create_shared_memory() failed");
 		exit(EXIT_FAILURE);
 	}
+
 	// initialize drone data
 	((int*)ptr)[0] = 0;		// Propeller 1 speed
 	((int*)ptr)[1] = 0;		// Propeller 2 speed
 	((int*)ptr)[2] = 0;		// Propeller 3 speed
 	((int*)ptr)[3] = 0;		// Propeller 4 speed
+
 
 
 

@@ -77,6 +77,7 @@ void send_speed_to_server(int coid, void *ptr, int code) {
 	MsgSendPulse(coid, -1, code, speed);
 }
 
+
 // thread functions
 // each sensor shares the same connection id to the server and send the respective propeller speed value in a pulse
 void* sens1(void* args) {
@@ -85,6 +86,7 @@ void* sens1(void* args) {
 	while (1)
 	{
 		send_speed_to_server(th_args->coid, th_args->ptr, _PULSE_CODE_UPDATE_SPEED1);
+
 	}
 }
 
