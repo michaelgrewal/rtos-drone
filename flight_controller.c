@@ -15,6 +15,8 @@ typedef union
 	uint16_t type;
 	struct _pulse pulse;
 	char rmsg[MAX_STRING_LEN];
+	get_target_speed_msg_t msg_target;
+	get_target_speed_resp_t resp_target;
 } recv_buf_t;
 
 
@@ -58,6 +60,7 @@ int main(int argc, char* argv[])
 	int rcvid;
 	char reply_msg[MAX_STRING_LEN];
 	recv_buf_t msg;
+	get_target_speed_resp_t resp_target;
 	void *ptr;
 
 	// register server name
@@ -111,12 +114,19 @@ int main(int argc, char* argv[])
 
 		// got a message
 		else {
-			printf("[FC] Received message: %s\n", msg.rmsg);
-			strcpy(reply_msg, "reply from server");
-			MsgReply(rcvid, EOK, &reply_msg, sizeof(reply_msg));
+//			printf("[FC] Received message type: %d\n", msg.type);
+
+			switch (msg.type)
+			{
+			case GET_TARGET_SPEED_MSG_TYPE:
+				// TODO target speed should come from the NAVIGATION PROCESS. Using HOVER for now debug purposes.
+				resp_target.target = HOVER;
+				MsgReply(rcvid, EOK, &resp_target, sizeof(resp_target));
+				break;
+			}
 		}
 
-		// reset buffers
+		// reset buffers (only when using string msgs, currently unused).
 		memset(reply_msg, 0, sizeof(reply_msg));
 		memset(msg.rmsg, 0, sizeof(msg.rmsg));
 	}

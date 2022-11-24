@@ -5,4 +5,9 @@
 
 const char *shmem_props[] = {"prop1", "prop2", "prop3", "prop4"};
 
+struct thread_args {
+	void *ptr;
+	int coid;
+};
+
 #endif /* PROPELLER_H_ */
