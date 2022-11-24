@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <sys/iofunc.h>
+#include <sys/dispatch.h>
 #include "propeller.h"
 #include "flight_controller.h"
 
@@ -86,49 +88,66 @@ void update_shmem(void* ptr, int speed) {
 	*(int *)ptr = speed;
 }
 
+void adjust_speed_to_target(int speed, int target, void* ptr) {
+	while (speed != target) {
+		if (speed < target) {
+			speed += RATE;
+		}
+		else if (speed > target) {
+			speed -= RATE;
+		}
+		update_shmem(ptr, speed);
+		usleep(100000);
+	}
+}
+
 // thread functions
 // each propeller will update their current speed into shared memory object
 void* prop1(void* args) {
 	struct thread_args *th_args = args;
-	int speed1;
+	int speed, target;
 
 	while (1)
 	{
-		speed1 = get_target_speed_from_server(th_args->coid);
-		update_shmem(th_args->ptr, speed1);
+		speed = *(int *)th_args->ptr;
+		target = get_target_speed_from_server(th_args->coid);
+		adjust_speed_to_target(speed, target, th_args->ptr);
 	}
 }
 
 void* prop2(void* args) {
 	struct thread_args *th_args = args;
-	int speed2;
+	int speed, target;
 
 	while (1)
 	{
-		speed2 = get_target_speed_from_server(th_args->coid);
-		update_shmem(th_args->ptr, speed2);
+		speed = *(int *)th_args->ptr;
+		target = get_target_speed_from_server(th_args->coid);
+		adjust_speed_to_target(speed, target, th_args->ptr);
 	}
 }
 
 void* prop3(void* args) {
 	struct thread_args *th_args = args;
-	int speed3;
+	int speed, target;
 
 	while (1)
 	{
-		speed3 = get_target_speed_from_server(th_args->coid);
-		update_shmem(th_args->ptr, speed3);
+		speed = *(int *)th_args->ptr;
+		target = get_target_speed_from_server(th_args->coid);
+		adjust_speed_to_target(speed, target, th_args->ptr);
 	}
 }
 
 void* prop4(void* args) {
 	struct thread_args *th_args = args;
-	int speed4;
+	int speed, target;
 
 	while (1)
 	{
-		speed4 = get_target_speed_from_server(th_args->coid);
-		update_shmem(th_args->ptr, speed4);
+		speed = *(int *)th_args->ptr;
+		target = get_target_speed_from_server(th_args->coid);
+		adjust_speed_to_target(speed, target, th_args->ptr);
 	}
 }
 
