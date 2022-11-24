@@ -22,10 +22,11 @@ int main(void) {
 	// arrays for each thread's function
 	const void *funcs[] = {&prop1, &prop2, &prop3, &prop4};
 
-	int fd, i;
+	int fd, i, coid;
 	void *ptr;
 //	printf("[P] Hi I'm propeller client.\n");
 
+	coid = name_open(SERVER_NAME, 0);
 
 	/*
 	 * allocate memory for each propeller to store speed data into, and share with sensors that have read access into.
@@ -57,15 +58,27 @@ int main(void) {
 		// clean up don't need fd anymore
 		close(fd);
 
+		struct thread_args *args = malloc(sizeof(struct thread_args));
+		args->ptr = ptr;
+		args->coid = coid;
+
 		// create attr for ROUND ROBIN scheduling and create thread
 		pthread_attr_t attr;
 		pthread_attr_init(&attr);
 		pthread_attr_setschedpolicy(&attr, SCHED_RR);
-		pthread_create(NULL, &attr, funcs[i], ptr);
+		pthread_create(NULL, &attr, funcs[i], (void *)args);
 	}
 
-	sleep(5);
+	sleep(10);	// TODO (maybe pthread join to wait for them instead)
 	return 0;
+}
+
+int get_target_speed_from_server(int coid) {
+	get_target_speed_msg_t msg_target;
+	get_target_speed_resp_t resp_target;
+	msg_target.type = GET_TARGET_SPEED_MSG_TYPE;
+	MsgSend(coid, &msg_target, sizeof(msg_target), &resp_target, sizeof(resp_target));
+	return resp_target.target;
 }
 
 // updates the speed data in shared memory object for respective sensor to read
@@ -75,43 +88,47 @@ void update_shmem(void* ptr, int speed) {
 
 // thread functions
 // each propeller will update their current speed into shared memory object
-void* prop1(void* ptr) {
+void* prop1(void* args) {
+	struct thread_args *th_args = args;
 	int speed1;
 
 	while (1)
 	{
-		speed1 = 555;
-		update_shmem(ptr, speed1);
+		speed1 = get_target_speed_from_server(th_args->coid);
+		update_shmem(th_args->ptr, speed1);
 	}
 }
 
-void* prop2(void* ptr) {
+void* prop2(void* args) {
+	struct thread_args *th_args = args;
 	int speed2;
 
 	while (1)
 	{
-		speed2 = 666;
-		update_shmem(ptr, speed2);
+		speed2 = get_target_speed_from_server(th_args->coid);
+		update_shmem(th_args->ptr, speed2);
 	}
 }
 
-void* prop3(void* ptr) {
+void* prop3(void* args) {
+	struct thread_args *th_args = args;
 	int speed3;
 
 	while (1)
 	{
-		speed3 = 777;
-		update_shmem(ptr, speed3);
+		speed3 = get_target_speed_from_server(th_args->coid);
+		update_shmem(th_args->ptr, speed3);
 	}
 }
 
-void* prop4(void* ptr) {
+void* prop4(void* args) {
+	struct thread_args *th_args = args;
 	int speed4;
 
 	while (1)
 	{
-		speed4 = 888;
-		update_shmem(ptr, speed4);
+		speed4 = get_target_speed_from_server(th_args->coid);
+		update_shmem(th_args->ptr, speed4);
 	}
 }
 

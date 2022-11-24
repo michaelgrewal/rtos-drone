@@ -18,11 +18,6 @@ void *sens2(void *);
 void *sens3(void *);
 void *sens4(void *);
 
-struct thread_args {
-	void *ptr;
-	int coid;
-};
-
 
 
 int main(void) {
@@ -63,10 +58,10 @@ int main(void) {
 		pthread_attr_t attr;
 		pthread_attr_init(&attr);
 		pthread_attr_setschedpolicy(&attr, SCHED_RR);
-		pthread_create(NULL, NULL, funcs[i], (void *)args);
+		pthread_create(NULL, &attr, funcs[i], (void *)args);
 	}
 
-	sleep(5);
+	sleep(10); 	// TODO (maybe pthread join to wait for them instead)
 	return 0;
 }
 
