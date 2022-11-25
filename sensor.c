@@ -61,7 +61,7 @@ int main(void) {
 		pthread_create(NULL, &attr, funcs[i], (void *)args);
 	}
 
-	sleep(10); 	// TODO (maybe pthread join to wait for them instead)
+	sleep(STAY_ALIVE_TIME); 	// TODO (maybe pthread join to wait for them instead)
 	return 0;
 }
 
@@ -70,6 +70,7 @@ void send_speed_to_server(int coid, void *ptr, int code) {
 	int speed;
 	speed = *(int *)ptr;
 	MsgSendPulse(coid, -1, code, speed);
+	sleep(1);
 }
 
 

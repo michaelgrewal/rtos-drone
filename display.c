@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 	{
 		printf("\r[D] Reads Speed1: %d, Speed2: %d, Speed3: %d, Speed4: %d", ((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3]);
 		fflush(stdout);
-		usleep(100000);
+		sleep(1);
 	}
 
     return EXIT_SUCCESS;
