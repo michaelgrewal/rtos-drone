@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 {
 	int fd;
 	void *ptr;
-	char output[PAGE_SIZE];
+	char output[MAX_STRING_LEN];
 //	printf("[D] Hi I'm display HUD.\n");
 
 	// open named shared memory in read-only mode

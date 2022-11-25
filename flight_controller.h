@@ -6,10 +6,10 @@
 #include <sys/mman.h>
 
 #define SERVER_NAME "flight_controller"
-#define MAX_STRING_LEN 128
+#define MAX_STRING_LEN 4096
 #define SHM_NAME "data"
 #define PAGE_SIZE 4096
-#define STAY_ALIVE_TIME	120
+#define STAY_ALIVE_TIME	3600	//TODO temp variable for now, need to implement proper cleanup, procs and thread returns (pthread joins)
 
 // SPEED (RPM) Values
 #define STOP	0
