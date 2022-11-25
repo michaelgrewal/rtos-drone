@@ -206,7 +206,7 @@ void* wind(void* args) {
 
 	while (1){
 		// gust of wind hits all propellers every (sleep) seconds
-		sleep(5);
+		sleep(10);
 
 		// generate random speeds between 0 and MAX_RPM
 		rand1 = (rand() % MAX_RPM+1);
