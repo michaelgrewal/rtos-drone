@@ -9,6 +9,7 @@
 #define MAX_STRING_LEN 128
 #define SHM_NAME "data"
 #define PAGE_SIZE 4096
+#define STAY_ALIVE_TIME	120
 
 // SPEED (RPM) Values
 #define STOP	0
