@@ -119,7 +119,7 @@ void adjust_speed_to_target(int speed, int target, void* ptr) {
 			speed -= RATE;
 		}
 		update_shmem(ptr, speed);
-		usleep(250000);
+		usleep(ADJUST_SPEED_INTERVAL_MICROSEC);
 	}
 }
 
@@ -139,7 +139,7 @@ void* prop1(void* args) {
 		adjust_speed_to_target(speed, target, th_args->ptr);
 
 		pthread_mutex_unlock(&mutex1);
-		sleep(1);
+		sleep(PROP_WAIT);
 
 	}
 }
@@ -157,7 +157,7 @@ void* prop2(void* args) {
 		adjust_speed_to_target(speed, target, th_args->ptr);
 
 		pthread_mutex_unlock(&mutex2);
-		sleep(1);
+		sleep(PROP_WAIT);
 
 	}
 }
@@ -175,7 +175,7 @@ void* prop3(void* args) {
 		adjust_speed_to_target(speed, target, th_args->ptr);
 
 		pthread_mutex_unlock(&mutex3);
-		sleep(1);
+		sleep(PROP_WAIT);
 
 	}
 }
@@ -193,7 +193,7 @@ void* prop4(void* args) {
 		adjust_speed_to_target(speed, target, th_args->ptr);
 
 		pthread_mutex_unlock(&mutex4);
-		sleep(1);
+		sleep(PROP_WAIT);
 	}
 }
 
@@ -206,7 +206,7 @@ void* wind(void* args) {
 
 	while (1){
 		// gust of wind hits all propellers every (sleep) seconds
-		sleep(10);
+		sleep(WIND_INTERVAL_SEC);
 
 		// generate random speeds between 0 and MAX_RPM
 		rand1 = (rand() % MAX_RPM+1);
