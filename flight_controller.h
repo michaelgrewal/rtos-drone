@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <sys/iomsg.h>
 #include <sys/mman.h>
+#include "navigation.h"
 
 #define SERVER_NAME "flight_controller"
 #define MAX_STRING_LEN 4096
@@ -27,7 +28,7 @@
 
 // MESSAGE CODES
 #define GET_TARGET_SPEED_MSG_TYPE	(_IO_MAX + 1)
-
+#define SET_TARGET_SPEED_MSG_TYPE	(_IO_MAX + 2)
 
 typedef struct get_target_speed_msg {
 	uint16_t type;
@@ -36,5 +37,12 @@ typedef struct get_target_speed_msg {
 typedef struct get_target_speed_resp {
 	unsigned target;
 } get_target_speed_resp_t;
+
+typedef struct set_target_speed_msg {
+	uint16_t type;
+	nav_data_t nav_data;
+} set_target_speed_msg_t;
+
+//no response needed for set_target_speed
 
 #endif /* FLIGHT_CONTROLLER_H_ */
