@@ -20,3 +20,4 @@ Explanation:
 - Each Propeller writes it's speed to it's shared memory, then the Sensors read it and transmit a Pulse back to Flight Controller (Server).
 - Flight Controller writes the received speeds into the shared memory, such that Display can update the values.
 - Random gusts of wind are delivered to propellers that changes their speeds, and the system reacts accordingly to restore target speeds.
+- Periodic timeouts to simulate altitude sensors. Flight controller periodically updates altitude and Display updates the HUD.
