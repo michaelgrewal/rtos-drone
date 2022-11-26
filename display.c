@@ -36,9 +36,9 @@ int main(int argc, char* argv[]) {
 	running = 1;
 	while(running) {
 		// for DEBUG, otherwise the print formatting below will overwrite any debug
-		// printf("\r[D] Reads Speed1: %d, Speed2: %d, Speed3: %d, Speed4: %d", ((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3]);
-		// fflush(stdout);
-		// sleep(1);
+//		 printf("\r[D] Reads Speed1: %d, Speed2: %d, Speed3: %d, Speed4: %d, Altitude: %d\n", ((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3], ((int*)ptr)[4]);
+//		 fflush(stdout);
+//		 sleep(1);
 
 		// cleaner output but will overwrite any debug print statements
 	    update();
@@ -47,8 +47,9 @@ int main(int argc, char* argv[]) {
 	    		            "\t\t\t--------------------\n"
 	    		"Propeller 3 (CW) : %5d RPM\t | \tPropeller 4 (CCW): %5d RPM\n"
 	    		"\n"
+	    		"Altitude: %d meters\n"
 	    		"Current Command: <?>",
-				((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3]);
+				((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3], ((int*)ptr)[4]);
 
 	    puts(output);
 	    sleep(2);
