@@ -12,10 +12,7 @@
 #include "flight_controller.h"
 
 // forward declarations for thread functions
-void *prop1(void *);
-void *prop2(void *);
-void *prop3(void *);
-void *prop4(void *);
+void *update_propeller(void *);
 void *wind(void *);
 
 // mutexes so wind simulation and propellers don't collide with data access (prevent race conditions)
@@ -25,11 +22,9 @@ pthread_mutex_t mutex3 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex4 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t *mutexes[] = {&mutex1, &mutex2, &mutex3, &mutex4};
 
-
-
 int main(void) {
 	// arrays for each thread's function
-	const void *funcs[] = {&prop1, &prop2, &prop3, &prop4};
+	thread_args_t thread_args[NUM_PROPS];
 
 	// array of pointers to each propellers speed data, to be used by wind thread so it can force the new speeds on the propeller threads
 	int **ptrs = (int **)malloc(4*sizeof(int));
@@ -71,15 +66,15 @@ int main(void) {
 		// clean up don't need fd anymore
 		close(fd);
 
-		struct thread_args *args = malloc(sizeof(struct thread_args));
-		args->ptr = ptr;
-		args->coid = coid;
+		thread_args[i].ptr = ptr;
+		thread_args[i].coid = coid;
+		thread_args[i].mutex = mutexes[i];
 
 		// create attr for ROUND ROBIN scheduling and create thread
 		pthread_attr_t attr;
 		pthread_attr_init(&attr);
 		pthread_attr_setschedpolicy(&attr, SCHED_RR);
-		pthread_create(NULL, &attr, funcs[i], (void *)args);
+		pthread_create(NULL, &attr, update_propeller, (void *)(&thread_args[i]));
 	}
 
 	// thread to simulate wind
@@ -89,7 +84,13 @@ int main(void) {
 	pthread_create(NULL, &attr, &wind, (void *)ptrs);
 
 	sleep(STAY_ALIVE_TIME);	// TODO (maybe pthread join to wait for them instead)
-	return 0;
+
+	for(i = 0; i < NUM_PROPS; ++i) {
+		munmap(ptrs[i], sizeof(int));
+	}
+
+	free(ptrs);
+	return EXIT_SUCCESS;
 }
 
 
@@ -123,76 +124,19 @@ void adjust_speed_to_target(int speed, int target, void* ptr) {
 	}
 }
 
-
-// thread functions
-// each propeller will update their current speed into shared memory object
-void* prop1(void* args) {
-	struct thread_args *th_args = args;
+void *update_propeller(void *args) {
+	thread_args_t *th_args = args;
 	int speed, target;
 
 	while (1)
 	{
-		pthread_mutex_lock(&mutex1);
+		pthread_mutex_lock(th_args->mutex);
 
 		speed = *(int *)th_args->ptr;
 		target = get_target_speed_from_server(th_args->coid);
 		adjust_speed_to_target(speed, target, th_args->ptr);
 
-		pthread_mutex_unlock(&mutex1);
-		sleep(PROP_WAIT);
-
-	}
-}
-
-void* prop2(void* args) {
-	struct thread_args *th_args = args;
-	int speed, target;
-
-	while (1)
-	{
-		pthread_mutex_lock(&mutex2);
-
-		speed = *(int *)th_args->ptr;
-		target = get_target_speed_from_server(th_args->coid);
-		adjust_speed_to_target(speed, target, th_args->ptr);
-
-		pthread_mutex_unlock(&mutex2);
-		sleep(PROP_WAIT);
-
-	}
-}
-
-void* prop3(void* args) {
-	struct thread_args *th_args = args;
-	int speed, target;
-
-	while (1)
-	{
-		pthread_mutex_lock(&mutex3);
-
-		speed = *(int *)th_args->ptr;
-		target = get_target_speed_from_server(th_args->coid);
-		adjust_speed_to_target(speed, target, th_args->ptr);
-
-		pthread_mutex_unlock(&mutex3);
-		sleep(PROP_WAIT);
-
-	}
-}
-
-void* prop4(void* args) {
-	struct thread_args *th_args = args;
-	int speed, target;
-
-	while (1)
-	{
-		pthread_mutex_lock(&mutex4);
-
-		speed = *(int *)th_args->ptr;
-		target = get_target_speed_from_server(th_args->coid);
-		adjust_speed_to_target(speed, target, th_args->ptr);
-
-		pthread_mutex_unlock(&mutex4);
+		pthread_mutex_unlock(th_args->mutex);
 		sleep(PROP_WAIT);
 	}
 }

@@ -51,9 +51,6 @@ int create_shared_memory(int nbytes, void **ptr) {
 	return 0;
 }
 
-
-
-
 int main(int argc, char* argv[])
 {
 //	printf("[FC] Hi I'm FC Server\n");
@@ -78,9 +75,6 @@ int main(int argc, char* argv[])
 	((int*)ptr)[1] = 0;		// Propeller 2 speed
 	((int*)ptr)[2] = 0;		// Propeller 3 speed
 	((int*)ptr)[3] = 0;		// Propeller 4 speed
-
-
-
 
 	while(1)
 	{
@@ -133,6 +127,7 @@ int main(int argc, char* argv[])
 
 	// clean up
 	name_detach(attach, 0);
+	munmap(ptr, PAGE_SIZE);
 
     return EXIT_SUCCESS;
 }

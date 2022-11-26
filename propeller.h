@@ -9,9 +9,13 @@
 
 const char *shmem_props[] = {"prop1", "prop2", "prop3", "prop4"};
 
-struct thread_args {
+typedef struct {
 	void *ptr;
 	int coid;
-};
+	union {
+		int8_t prop_code;
+		pthread_mutex_t *mutex;
+	};
+} thread_args_t;
 
 #endif /* PROPELLER_H_ */
