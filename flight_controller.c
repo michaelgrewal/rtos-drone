@@ -207,15 +207,27 @@ int create_shared_memory(int nbytes, void **ptr) {
 }
 
 void calc_speed(direction_t direction, int *target_speeds) {
-	int x_dir = (direction & LEFT	  ) - (direction & RIGHT);
-	int y_dir = (direction & FORWARD  ) - (direction & BACKWARD);
-	int z_dir = (direction & UP		  ) - (direction & DOWN);
-	int rot	  = (direction & CLOCKWISE) - (direction & CCLOCKWISE);
+	int x_dir = 0; 
+	int y_dir = 0;
+	int z_dir = 0;
+	int rot	  = 0;
+
+	if (direction & LEFT      ) ++x_dir;
+	if (direction & RIGHT     ) --x_dir;
+
+	if (direction & FORWARD   ) ++y_dir;
+	if (direction & BACKWARD  ) --y_dir;
+
+	if (direction & UP        ) ++z_dir;
+	if (direction & DOWN      ) --z_dir;
+
+	if (direction & CLOCKWISE ) ++rot;
+	if (direction & CCLOCKWISE) --rot;
 
 	// Reset current speeds
 	if (z_dir > 0) {
 		up(target_speeds);
-	} else if (x_dir < 0) {
+	} else if (z_dir < 0) {
 		down(target_speeds);
 	} else {
 		hover(target_speeds);
@@ -229,13 +241,13 @@ void calc_speed(direction_t direction, int *target_speeds) {
 
 	if (y_dir > 0) {
 		forwards(target_speeds);
-	} else if (x_dir < 0) {
+	} else if (y_dir < 0) {
 		backwards(target_speeds);
 	}
 
 	if (rot > 0) {
 		clockwise(target_speeds);
-	} else if (x_dir < 0) {
+	} else if (rot < 0) {
 		cclockwise(target_speeds);
 	}
 }
