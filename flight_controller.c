@@ -21,7 +21,7 @@ typedef union
 } recv_buf_t;
 
 int create_shared_memory(int nbytes, void **ptr);
-int calc_speed(direction_t direction);
+int calc_speed(direction_t direction, int curr_speed);
 
 int main(int argc, char* argv[])
 {
@@ -91,7 +91,8 @@ int main(int argc, char* argv[])
 				break;
 
 			case SET_TARGET_SPEED_MSG_TYPE:
-				target_speed = calc_speed(msg.msg_set_target.nav_data.direction);
+				target_speed = calc_speed(msg.msg_set_target.nav_data.direction, target_speed);
+				MsgReply(rcvid, EOK, NULL, 0);
 				break;
 			}
 		}
@@ -140,6 +141,35 @@ int create_shared_memory(int nbytes, void **ptr) {
 	return 0;
 }
 
-int calc_speed(direction_t direction) {
-	return HOVER;
+int calc_speed(direction_t direction, int curr_speed) {
+	int x_dir = (direction & NAV_LEFT	  ) - (direction & NAV_RIGHT);
+	int y_dir = (direction & NAV_FORWARD  ) - (direction & NAV_BACKWARD);
+	int z_dir = (direction & NAV_UP		  ) - (direction & NAV_DOWN);
+	int rot	  = (direction & NAV_CLOCKWISE) - (direction & NAV_CCLOCKWISE);
+
+	if (x_dir > 0) {
+		printf("Moving left\n");
+	} else if (x_dir < 0) {
+		printf("Moving right\n");
+	}
+
+	if (y_dir > 0) {
+		printf("Moving forwards\n");
+	} else if (x_dir < 0) {
+		printf("Moving backwards\n");
+	}
+
+	if (z_dir > 0) {
+		printf("Moving up\n");
+	} else if (x_dir < 0) {
+		printf("Moving down\n");
+	}
+
+	if (rot > 0) {
+		printf("Rotating cw\n");
+	} else if (x_dir < 0) {
+		printf("Rotating ccw\n");
+	}
+
+	return curr_speed + 1000;
 }
