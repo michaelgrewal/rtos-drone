@@ -15,12 +15,14 @@
 #define ALTITUDE_TIMEOUT	2
 
 // SPEED (RPM) Values
-#define STOP	0
-#define DESCEND	2500
-#define HOVER	5000
-#define ASCEND	7500
-#define MAX_RPM	10000
-
+typedef enum {
+	STOP	= 0,
+	MOVE	= 1000,
+	DESCEND	= 2500,
+	HOVER   = 5000,
+	ASCEND	= 7500,
+	MAX_RPM	= 10000
+} propeller_rpm_states_t;
 
 // PULSE CODES
 #define _PULSE_CODE_UPDATE_SPEED1 			(_PULSE_CODE_MINAVAIL + 1)

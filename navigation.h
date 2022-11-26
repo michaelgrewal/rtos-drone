@@ -2,7 +2,7 @@
 #define NAVIGATION_H_
 
 typedef enum {
-    HOVER       = 0b00000000,
+    MAINTAIN    = 0b00000000,
     UP          = 0b00000001,
     DOWN        = 0b00000010,
     LEFT        = 0b00000100,

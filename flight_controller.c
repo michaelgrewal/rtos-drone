@@ -28,6 +28,17 @@ void calculate_altitude(void *ptr);
 void setup_altitude_periodic_updates(pid_t server_pid, int chid, struct itimerspec *it, struct sigevent *se, timer_t *tID);
 
 
+// Commands
+inline void hover(int *target_speeds);
+inline void up(int *target_speeds);
+inline void down(int *target_speeds);
+inline void left(int *target_speeds);
+inline void right(int *target_speeds);
+inline void forwards(int *target_speeds);
+inline void backwards(int *target_speeds);
+inline void clockwise(int *target_speeds);
+inline void cclockwise(int *target_speeds);
+
 int main(int argc, char* argv[])
 {
 	int rcvid;
@@ -201,58 +212,93 @@ void calc_speed(direction_t direction, int *target_speeds) {
 	int z_dir = (direction & UP		  ) - (direction & DOWN);
 	int rot	  = (direction & CLOCKWISE) - (direction & CCLOCKWISE);
 
+	// Reset current speeds
+	if (z_dir > 0) {
+		up(target_speeds);
+	} else if (x_dir < 0) {
+		down(target_speeds);
+	} else {
+		hover(target_speeds);
+	}
+
+	if (x_dir > 0) {
+		left(target_speeds);
+	} else if (x_dir < 0) {
+		right(target_speeds);
+	}
+
+	if (y_dir > 0) {
+		forwards(target_speeds);
+	} else if (x_dir < 0) {
+		backwards(target_speeds);
+	}
+
+	if (rot > 0) {
+		clockwise(target_speeds);
+	} else if (x_dir < 0) {
+		cclockwise(target_speeds);
+	}
+}
+
+void hover(int *target_speeds) {
 	target_speeds[FRONT_LEFT]  = HOVER;
 	target_speeds[FRONT_RIGHT] = HOVER;
 	target_speeds[BACK_LEFT]   = HOVER;
 	target_speeds[BACK_RIGHT]  = HOVER;
+}
 
-	if (x_dir > 0) {
-		// Move left, decrease left RPM
-		target_speeds[FRONT_LEFT]  -= 1000;
-		target_speeds[BACK_LEFT]   -= 1000;
-	} else if (x_dir < 0) {
-		// Move right, decrease right RPM
-		target_speeds[FRONT_RIGHT] -= 1000;
-		target_speeds[BACK_RIGHT]  -= 1000;
-	}
+void up(int *target_speeds) {
+	target_speeds[FRONT_LEFT]  = ASCEND;
+	target_speeds[FRONT_RIGHT] = ASCEND;
+	target_speeds[BACK_LEFT]   = ASCEND;
+	target_speeds[BACK_RIGHT]  = ASCEND;
+}
 
-	if (y_dir > 0) {
-		// Move forwards, decrease front RPM
-		target_speeds[FRONT_LEFT]  -= 1000;
-		target_speeds[FRONT_RIGHT] -= 1000;
-	} else if (x_dir < 0) {
-		// Move backwards, decrease back RPM
-		target_speeds[BACK_LEFT]   -= 1000;
-		target_speeds[BACK_RIGHT]  -= 1000;
-	}
+void down(int *target_speeds) {
+	target_speeds[FRONT_LEFT]  = DESCEND;
+	target_speeds[FRONT_RIGHT] = DESCEND;
+	target_speeds[BACK_LEFT]   = DESCEND;
+	target_speeds[BACK_RIGHT]  = DESCEND;
+}
 
-	if (z_dir > 0) {
-		// Move up, increase all RPM
-		target_speeds[FRONT_LEFT]  += 1000;
-		target_speeds[FRONT_RIGHT] += 1000;
-		target_speeds[BACK_LEFT]   += 1000;
-		target_speeds[BACK_RIGHT]  += 1000;
-	} else if (x_dir < 0) {
-		// Move down, decrease all RPM
-		target_speeds[FRONT_LEFT]  -= 1000;
-		target_speeds[FRONT_RIGHT] -= 1000;
-		target_speeds[BACK_LEFT]   -= 1000;
-		target_speeds[BACK_RIGHT]  -= 1000;
-	}
+void left(int *target_speeds) {
+	target_speeds[FRONT_LEFT]  -= MOVE;
+	target_speeds[FRONT_RIGHT] += MOVE;
+	target_speeds[BACK_LEFT]   -= MOVE;
+	target_speeds[BACK_RIGHT]  += MOVE;
+}
 
-	if (rot > 0) {
-		// Rotate clockwise, decrease front right and back left,
-		// increase front left and back right
-		target_speeds[FRONT_LEFT]  += 1000;
-		target_speeds[FRONT_RIGHT] -= 1000;
-		target_speeds[BACK_LEFT]   -= 1000;
-		target_speeds[BACK_RIGHT]  += 1000;
-	} else if (x_dir < 0) {
-		// Rotate counter clockwise, increase front right and back left,
-		// decrease front left and back right
-		target_speeds[FRONT_LEFT]  -= 1000;
-		target_speeds[FRONT_RIGHT] += 1000;
-		target_speeds[BACK_LEFT]   += 1000;
-		target_speeds[BACK_RIGHT]  -= 1000;
-	}
+void right(int *target_speeds) {
+	target_speeds[FRONT_LEFT]  += MOVE;
+	target_speeds[FRONT_RIGHT] -= MOVE;
+	target_speeds[BACK_LEFT]   += MOVE;
+	target_speeds[BACK_RIGHT]  -= MOVE;
+}
+
+void forwards(int *target_speeds) {
+	target_speeds[FRONT_LEFT]  -= MOVE;
+	target_speeds[FRONT_RIGHT] -= MOVE;
+	target_speeds[BACK_LEFT]   += MOVE;
+	target_speeds[BACK_RIGHT]  += MOVE;
+}
+
+void backwards(int *target_speeds) {
+	target_speeds[FRONT_LEFT]  += MOVE;
+	target_speeds[FRONT_RIGHT] += MOVE;
+	target_speeds[BACK_LEFT]   -= MOVE;
+	target_speeds[BACK_RIGHT]  -= MOVE;
+}
+
+void clockwise(int *target_speeds) {
+	target_speeds[FRONT_LEFT]  -= MOVE;
+	target_speeds[FRONT_RIGHT] += MOVE;
+	target_speeds[BACK_LEFT]   -= MOVE;
+	target_speeds[BACK_RIGHT]  += MOVE;
+}
+
+void cclockwise(int *target_speeds) {
+	target_speeds[FRONT_LEFT]  += MOVE;
+	target_speeds[FRONT_RIGHT] -= MOVE;
+	target_speeds[BACK_LEFT]   += MOVE;
+	target_speeds[BACK_RIGHT]  -= MOVE;
 }
