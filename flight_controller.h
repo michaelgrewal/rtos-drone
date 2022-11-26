@@ -10,6 +10,7 @@
 #define MAX_STRING_LEN 4096
 #define SHM_NAME "data"
 #define PAGE_SIZE 4096
+#define COMMAND_OFFSET PAGE_SIZE / 2
 #define STAY_ALIVE_TIME	3600	//TODO temp variable for now, need to implement proper cleanup, procs and thread returns (pthread joins)
 #define ALTITUDE_RATE		10
 #define ALTITUDE_TIMEOUT	2

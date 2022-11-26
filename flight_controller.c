@@ -23,21 +23,23 @@ typedef union
 
 // Forward declarations
 int create_shared_memory(int nbytes, void **ptr);
-void calc_speed(direction_t direction, int *target_speeds);
+void update_direction(direction_t direction, int *target_speeds, char *command_buf);
 void calculate_altitude(void *ptr);
 void setup_altitude_periodic_updates(pid_t server_pid, int chid, struct itimerspec *it, struct sigevent *se, timer_t *tID);
 
 
 // Commands
-inline void hover(int *target_speeds);
-inline void up(int *target_speeds);
-inline void down(int *target_speeds);
-inline void left(int *target_speeds);
-inline void right(int *target_speeds);
-inline void forwards(int *target_speeds);
-inline void backwards(int *target_speeds);
-inline void clockwise(int *target_speeds);
-inline void cclockwise(int *target_speeds);
+inline void write_command(const char* command, char *command_buf, size_t *offset);
+
+inline void hover(int *target_speeds, char *command_buf, size_t *offset);
+inline void up(int *target_speeds, char *command_buf, size_t *offset);
+inline void down(int *target_speeds, char *command_buf, size_t *offset);
+inline void left(int *target_speeds, char *command_buf, size_t *offset);
+inline void right(int *target_speeds, char *command_buf, size_t *offset);
+inline void forwards(int *target_speeds, char *command_buf, size_t *offset);
+inline void backwards(int *target_speeds, char *command_buf, size_t *offset);
+inline void clockwise(int *target_speeds, char *command_buf, size_t *offset);
+inline void cclockwise(int *target_speeds, char *command_buf, size_t *offset);
 
 int main(int argc, char* argv[])
 {
@@ -47,6 +49,7 @@ int main(int argc, char* argv[])
 	recv_buf_t msg;
 	get_speed_resp_t resp;
 	void *ptr;
+	size_t offset;
 	struct sigevent sigevent;
 	struct itimerspec itime;
 	timer_t timerID;
@@ -72,6 +75,8 @@ int main(int argc, char* argv[])
 	((int*)ptr)[2] = 0;		// Propeller 3 speed
 	((int*)ptr)[3] = 0;		// Propeller 4 speed
 	((int*)ptr)[4] = 0;		// Altitude
+	offset = COMMAND_OFFSET;
+	write_command("Starting", ptr, &offset);
 
 	while(1)
 	{
@@ -118,7 +123,7 @@ int main(int argc, char* argv[])
 				break;
 
 			case SET_SPEEDS_MSG_TYPE:
-				calc_speed(msg.msg_set.nav_data.direction, target_speeds);
+				update_direction(msg.msg_set.nav_data.direction, target_speeds, ptr);
 				MsgReply(rcvid, EOK, NULL, 0);
 				break;
 			}
@@ -206,7 +211,7 @@ int create_shared_memory(int nbytes, void **ptr) {
 	return 0;
 }
 
-void calc_speed(direction_t direction, int *target_speeds) {
+void update_direction(direction_t direction, int *target_speeds, char *command_buf) {
 	int x_dir = 0; 
 	int y_dir = 0;
 	int z_dir = 0;
@@ -224,93 +229,119 @@ void calc_speed(direction_t direction, int *target_speeds) {
 	if (direction & CLOCKWISE ) ++rot;
 	if (direction & CCLOCKWISE) --rot;
 
+	size_t offset = COMMAND_OFFSET;
+
 	// Reset current speeds
 	if (z_dir > 0) {
-		up(target_speeds);
+		up(target_speeds, command_buf, &offset);
 	} else if (z_dir < 0) {
-		down(target_speeds);
+		down(target_speeds, command_buf, &offset);
 	} else {
-		hover(target_speeds);
+		hover(target_speeds, command_buf, &offset);
 	}
 
 	if (x_dir > 0) {
-		left(target_speeds);
+		left(target_speeds, command_buf, &offset);
 	} else if (x_dir < 0) {
-		right(target_speeds);
+		right(target_speeds, command_buf, &offset);
 	}
 
 	if (y_dir > 0) {
-		forwards(target_speeds);
+		forwards(target_speeds, command_buf, &offset);
 	} else if (y_dir < 0) {
-		backwards(target_speeds);
+		backwards(target_speeds, command_buf, &offset);
 	}
 
 	if (rot > 0) {
-		clockwise(target_speeds);
+		clockwise(target_speeds, command_buf, &offset);
 	} else if (rot < 0) {
-		cclockwise(target_speeds);
+		cclockwise(target_speeds, command_buf, &offset);
 	}
 }
 
-void hover(int *target_speeds) {
+void write_command(const char* command, char *command_buf, size_t *offset) {
+	size_t len = strlen(command);
+	snprintf(command_buf + *offset, PAGE_SIZE - *offset, "%s", command);
+	*offset += len;
+}
+
+void hover(int *target_speeds, char *command_buf, size_t *offset) {
 	target_speeds[FRONT_LEFT]  = HOVER;
 	target_speeds[FRONT_RIGHT] = HOVER;
 	target_speeds[BACK_LEFT]   = HOVER;
 	target_speeds[BACK_RIGHT]  = HOVER;
+
+	write_command("Hover ", command_buf, offset);
 }
 
-void up(int *target_speeds) {
+void up(int *target_speeds, char *command_buf, size_t *offset) {
 	target_speeds[FRONT_LEFT]  = ASCEND;
 	target_speeds[FRONT_RIGHT] = ASCEND;
 	target_speeds[BACK_LEFT]   = ASCEND;
 	target_speeds[BACK_RIGHT]  = ASCEND;
+
+	write_command("Up ", command_buf, offset);
 }
 
-void down(int *target_speeds) {
+void down(int *target_speeds, char *command_buf, size_t *offset) {
 	target_speeds[FRONT_LEFT]  = DESCEND;
 	target_speeds[FRONT_RIGHT] = DESCEND;
 	target_speeds[BACK_LEFT]   = DESCEND;
 	target_speeds[BACK_RIGHT]  = DESCEND;
+
+	write_command("Down ", command_buf, offset);
 }
 
-void left(int *target_speeds) {
+void left(int *target_speeds, char *command_buf, size_t *offset) {
 	target_speeds[FRONT_LEFT]  -= MOVE;
 	target_speeds[FRONT_RIGHT] += MOVE;
 	target_speeds[BACK_LEFT]   -= MOVE;
 	target_speeds[BACK_RIGHT]  += MOVE;
+
+	write_command("Left ", command_buf, offset);
 }
 
-void right(int *target_speeds) {
+void right(int *target_speeds, char *command_buf, size_t *offset) {
 	target_speeds[FRONT_LEFT]  += MOVE;
 	target_speeds[FRONT_RIGHT] -= MOVE;
 	target_speeds[BACK_LEFT]   += MOVE;
 	target_speeds[BACK_RIGHT]  -= MOVE;
+
+	write_command("Right ", command_buf, offset);
 }
 
-void forwards(int *target_speeds) {
+void forwards(int *target_speeds, char *command_buf, size_t *offset) {
 	target_speeds[FRONT_LEFT]  -= MOVE;
 	target_speeds[FRONT_RIGHT] -= MOVE;
 	target_speeds[BACK_LEFT]   += MOVE;
 	target_speeds[BACK_RIGHT]  += MOVE;
+
+	write_command("Forwards ", command_buf, offset);
 }
 
-void backwards(int *target_speeds) {
+void backwards(int *target_speeds, char *command_buf, size_t *offset) {
 	target_speeds[FRONT_LEFT]  += MOVE;
 	target_speeds[FRONT_RIGHT] += MOVE;
 	target_speeds[BACK_LEFT]   -= MOVE;
 	target_speeds[BACK_RIGHT]  -= MOVE;
+
+	write_command("Backwards ", command_buf, offset);
 }
 
-void clockwise(int *target_speeds) {
+void clockwise(int *target_speeds, char *command_buf, size_t *offset) {
 	target_speeds[FRONT_LEFT]  -= MOVE;
 	target_speeds[FRONT_RIGHT] += MOVE;
 	target_speeds[BACK_LEFT]   -= MOVE;
 	target_speeds[BACK_RIGHT]  += MOVE;
+
+	write_command("CW ", command_buf, offset);
 }
 
-void cclockwise(int *target_speeds) {
+void cclockwise(int *target_speeds, char *command_buf, size_t *offset) {
 	target_speeds[FRONT_LEFT]  += MOVE;
 	target_speeds[FRONT_RIGHT] -= MOVE;
 	target_speeds[BACK_LEFT]   += MOVE;
 	target_speeds[BACK_RIGHT]  -= MOVE;
+
+	write_command("CCW ", command_buf, offset);
 }

@@ -9,12 +9,13 @@
 #include "display.h"
 #include "flight_controller.h"
 
-inline void update();
+inline void clear();
 inline void goto_x_y(unsigned x, unsigned y);
 
 int main(int argc, char* argv[]) {
 	int fd, running;
 	void *ptr;
+	char* command;
 	char output[MAX_STRING_LEN];
 //	printf("[D] Hi I'm display HUD.\n");
 
@@ -27,6 +28,7 @@ int main(int argc, char* argv[]) {
 
 	// map the shared memory
 	ptr = mmap(NULL, PAGE_SIZE, PROT_READ, MAP_SHARED, fd, 0);
+	command = ptr + COMMAND_OFFSET;
 
 	// close fd, not needed anymore
 	close(fd);
@@ -41,15 +43,15 @@ int main(int argc, char* argv[]) {
 //		 sleep(1);
 
 		// cleaner output but will overwrite any debug print statements
-	    update();
+	    clear();
 	    sprintf(output,
 	    		"Propeller 1 (CCW): %5d RPM\t | \tPropeller 2 (CW) : %5d RPM\n"
 	    		            "\t\t\t--------------------\n"
 	    		"Propeller 3 (CW) : %5d RPM\t | \tPropeller 4 (CCW): %5d RPM\n"
 	    		"\n"
 	    		"Altitude: %d meters\n"
-	    		"Current Command: <?>",
-				((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3], ((int*)ptr)[4]);
+	    		"Current Command: %s",
+				((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3], ((int*)ptr)[4], command);
 
 	    puts(output);
 	    sleep(2);
@@ -60,7 +62,7 @@ int main(int argc, char* argv[]) {
     return EXIT_SUCCESS;
 }
 
-void update() {
+void clear() {
 	printf("\033[H\033[J");
 }
 
