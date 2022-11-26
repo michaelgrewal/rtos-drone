@@ -4,16 +4,21 @@
 #include <stdint.h>
 #include <sys/iomsg.h>
 #include <sys/mman.h>
+
+#include "propeller.h"
 #include "navigation.h"
 
 #define SERVER_NAME "flight_controller"
 #define MAX_STRING_LEN 4096
 #define SHM_NAME "data"
 #define PAGE_SIZE 4096
-#define COMMAND_OFFSET PAGE_SIZE / 2
 #define STAY_ALIVE_TIME	3600	//TODO temp variable for now, need to implement proper cleanup, procs and thread returns (pthread joins)
 #define ALTITUDE_RATE		10
 #define ALTITUDE_TIMEOUT	2
+
+#define PROP_OFFSET 0
+#define ALTITUDE_OFFSET PROP_OFFSET + NUM_PROPS * sizeof(int)
+#define COMMAND_OFFSET PAGE_SIZE / 2
 
 // SPEED (RPM) Values
 typedef enum {

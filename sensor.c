@@ -24,6 +24,7 @@ int main(void) {
 	int fd, i, coid;
 	void *ptr;
 	thread_args_t thread_args[NUM_PROPS];
+	pthread_t tids[NUM_PROPS];
 //	printf("[S] Hi I'm sensor.\n");
 
 	coid = name_open(SERVER_NAME, 0);
@@ -56,10 +57,17 @@ int main(void) {
 		pthread_attr_t attr;
 		pthread_attr_init(&attr);
 		pthread_attr_setschedpolicy(&attr, SCHED_RR);
-		pthread_create(NULL, &attr, sensor, (void *)(&thread_args[i]));
+		pthread_create(&tids[i], &attr, sensor, (void *)(&thread_args[i]));
 	}
 
-	sleep(STAY_ALIVE_TIME); 	// TODO (maybe pthread join to wait for them instead)
+	//sleep(STAY_ALIVE_TIME); 	// TODO (maybe pthread join to wait for them instead)
+	for (i = 0; i < NUM_PROPS; ++i) {
+		pthread_join(tids[i], NULL);
+		munmap(thread_args[i].ptr, sizeof(int));
+	}
+	
+	name_close(coid);
+
 	return EXIT_SUCCESS;
 }
 
@@ -67,7 +75,14 @@ int main(void) {
 void send_speed_to_server(int coid, void *ptr, int code) {
 	int speed;
 	speed = *(int *)ptr;
-	MsgSendPulse(coid, -1, code, speed);
+	if (-1 == MsgSendPulse(coid, -1, code, speed)) {
+		if (EBADF == errno) {
+			pthread_exit(NULL);
+		} else {
+			perror("send_speed_to_server(): ");
+			pthread_exit(NULL);
+		}
+	}
 	sleep(1);
 }
 

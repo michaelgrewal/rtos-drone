@@ -24,7 +24,7 @@ typedef union
 // Forward declarations
 int create_shared_memory(int nbytes, void **ptr);
 void update_direction(direction_t direction, int *target_speeds, char *command_buf);
-void calculate_altitude(void *ptr);
+void calculate_altitude(int *prop_speeds, int *altitude);
 void setup_altitude_periodic_updates(pid_t server_pid, int chid, struct itimerspec *it, struct sigevent *se, timer_t *tID);
 
 
@@ -41,6 +41,8 @@ inline void backwards(int *target_speeds, char *command_buf, size_t *offset);
 inline void clockwise(int *target_speeds, char *command_buf, size_t *offset);
 inline void cclockwise(int *target_speeds, char *command_buf, size_t *offset);
 
+void shutdown(char *command_buf);
+
 int main(int argc, char* argv[])
 {
 	int rcvid;
@@ -48,8 +50,14 @@ int main(int argc, char* argv[])
 	char reply_msg[MAX_STRING_LEN];
 	recv_buf_t msg;
 	get_speed_resp_t resp;
+
 	void *ptr;
+	int *prop_speeds;
+	int *altitude;
+
+	char *command_buf;
 	size_t offset;
+
 	struct sigevent sigevent;
 	struct itimerspec itime;
 	timer_t timerID;
@@ -70,13 +78,18 @@ int main(int argc, char* argv[])
 	}
 
 	// initialize drone data
-	((int*)ptr)[0] = 0;		// Propeller 1 speed
-	((int*)ptr)[1] = 0;		// Propeller 2 speed
-	((int*)ptr)[2] = 0;		// Propeller 3 speed
-	((int*)ptr)[3] = 0;		// Propeller 4 speed
-	((int*)ptr)[4] = 0;		// Altitude
-	offset = COMMAND_OFFSET;
-	write_command("Starting", ptr, &offset);
+	prop_speeds = ptr + PROP_OFFSET;
+	prop_speeds[0] = 0;
+	prop_speeds[1] = 0;
+	prop_speeds[2] = 0;
+	prop_speeds[3] = 0;
+
+	altitude = ptr + ALTITUDE_OFFSET;
+	*altitude = 0;
+
+	command_buf = ptr + COMMAND_OFFSET;
+	offset = 0;
+	write_command("Starting", command_buf, &offset);
 
 	while(1)
 	{
@@ -91,22 +104,22 @@ int main(int argc, char* argv[])
 					break;
 				// pulse from Sensor 1 giving Propeller 1 speed
 				case _PULSE_CODE_UPDATE_SPEED1:
-					((int*)ptr)[0] = msg.pulse.value.sival_int;
+					prop_speeds[0] = msg.pulse.value.sival_int;
 					break;
 				// pulse from Sensor 2 giving Propeller 2 speed
 				case _PULSE_CODE_UPDATE_SPEED2:
-					((int*)ptr)[1] = msg.pulse.value.sival_int;
+					prop_speeds[1] = msg.pulse.value.sival_int;
 					break;
 				// pulse from Sensor 3 giving Propeller 3 speed
 				case _PULSE_CODE_UPDATE_SPEED3:
-					((int*)ptr)[2] = msg.pulse.value.sival_int;
+					prop_speeds[2] = msg.pulse.value.sival_int;
 					break;
 				// pulse from Sensor 4 giving Propeller 4 speed
 				case _PULSE_CODE_UPDATE_SPEED4:
-					((int*)ptr)[3] = msg.pulse.value.sival_int;
+					prop_speeds[3] = msg.pulse.value.sival_int;
 					break;
 				case _PULSE_CODE_TIMER_ALTITUDE_UPDATE:
-					calculate_altitude(ptr);
+					calculate_altitude(prop_speeds, altitude);
 					break;
 				}
 		}
@@ -123,7 +136,7 @@ int main(int argc, char* argv[])
 				break;
 
 			case SET_SPEEDS_MSG_TYPE:
-				update_direction(msg.msg_set.nav_data.direction, target_speeds, ptr);
+				update_direction(msg.msg_set.nav_data.direction, target_speeds, command_buf);
 				MsgReply(rcvid, EOK, NULL, 0);
 				break;
 			}
@@ -143,25 +156,21 @@ int main(int argc, char* argv[])
 
 
 // Simulates altitude. Periodic check if altitude is going up or down
-void calculate_altitude(void *ptr) {
-	int speed1, speed2, speed3, speed4, altitude;
-	speed1 = ((int*)ptr)[0];
-	speed2 = ((int*)ptr)[1];
-	speed3 = ((int*)ptr)[2];
-	speed4 = ((int*)ptr)[3];
-	altitude = ((int*)ptr)[4];
+void calculate_altitude(int *prop_speeds, int* altitude) {
+	int speed1, speed2, speed3, speed4;
+	speed1 = prop_speeds[0];
+	speed2 = prop_speeds[1];
+	speed3 = prop_speeds[2];
+	speed4 = prop_speeds[3];
 
 	// if all propellers are above HOVER then drone is ascending in altitude
 	if (speed1 > HOVER && speed2 > HOVER && speed3 > HOVER && speed4 > HOVER) {
-		altitude += ALTITUDE_RATE;
+		*altitude += ALTITUDE_RATE;
 	}
 	// else if all propellers are below HOVER then drone is descending in altitude
 	else if (speed1 < HOVER && speed2 < HOVER && speed3 < HOVER && speed4 < HOVER && altitude > 0) {
-		altitude -= ALTITUDE_RATE;
+		*altitude -= ALTITUDE_RATE;
 	}
-	// otherwise drone is hovering and no change to altitude
-
-	((int*)ptr)[4] = altitude;
 }
 
 // Periodic timeout for pulse altitude updates
@@ -212,6 +221,12 @@ int create_shared_memory(int nbytes, void **ptr) {
 }
 
 void update_direction(direction_t direction, int *target_speeds, char *command_buf) {
+
+	if (direction == UINT8_MAX) {
+		shutdown(command_buf);
+		return;
+	}
+
 	int x_dir = 0; 
 	int y_dir = 0;
 	int z_dir = 0;
@@ -229,7 +244,7 @@ void update_direction(direction_t direction, int *target_speeds, char *command_b
 	if (direction & CLOCKWISE ) ++rot;
 	if (direction & CCLOCKWISE) --rot;
 
-	size_t offset = COMMAND_OFFSET;
+	size_t offset = 0;
 
 	// Reset current speeds
 	if (z_dir > 0) {
@@ -344,4 +359,9 @@ void cclockwise(int *target_speeds, char *command_buf, size_t *offset) {
 	target_speeds[BACK_RIGHT]  -= MOVE;
 
 	write_command("CCW ", command_buf, offset);
+}
+
+void shutdown(char *command_buf) {
+	size_t offset = 0;
+	write_command("Shutting Down", command_buf, &offset);
 }

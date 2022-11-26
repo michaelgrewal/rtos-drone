@@ -29,6 +29,7 @@ pthread_mutex_t *mutexes[] = { &mutex1, &mutex2, &mutex3, &mutex4 };
 int main(void) {
 	// arrays for each thread's function
 	thread_args_t thread_args[NUM_PROPS];
+	pthread_t tids[NUM_PROPS];
 
 	// array of pointers to each propellers speed data, to be used by wind thread so it can force the new speeds on the propeller threads
 	int **ptrs = (int **)malloc(4*sizeof(int));
@@ -79,7 +80,7 @@ int main(void) {
 		pthread_attr_t attr;
 		pthread_attr_init(&attr);
 		pthread_attr_setschedpolicy(&attr, SCHED_RR);
-		pthread_create(NULL, &attr, update_propeller, (void *)(&thread_args[i]));
+		pthread_create(&tids[i], &attr, update_propeller, (void *)(&thread_args[i]));
 	}
 
 	// thread to simulate wind
@@ -88,9 +89,8 @@ int main(void) {
 	pthread_attr_setschedpolicy(&attr, SCHED_RR);
 	pthread_create(NULL, &attr, &wind, (void *)ptrs);
 
-	sleep(STAY_ALIVE_TIME);	// TODO (maybe pthread join to wait for them instead)
-
 	for(i = 0; i < NUM_PROPS; ++i) {
+		pthread_join(tids[i], NULL);
 		munmap(ptrs[i], sizeof(int));
 	}
 

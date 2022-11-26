@@ -14,8 +14,12 @@ inline void goto_x_y(unsigned x, unsigned y);
 
 int main(int argc, char* argv[]) {
 	int fd, running;
+
 	void *ptr;
-	char* command;
+	int *prop_speeds;
+	int *altitude;
+	char *command_buf;
+
 	char output[MAX_STRING_LEN];
 //	printf("[D] Hi I'm display HUD.\n");
 
@@ -28,7 +32,10 @@ int main(int argc, char* argv[]) {
 
 	// map the shared memory
 	ptr = mmap(NULL, PAGE_SIZE, PROT_READ, MAP_SHARED, fd, 0);
-	command = ptr + COMMAND_OFFSET;
+	
+	prop_speeds = ptr + PROP_OFFSET;
+	altitude = ptr + ALTITUDE_OFFSET;
+	command_buf = ptr + COMMAND_OFFSET;
 
 	// close fd, not needed anymore
 	close(fd);
@@ -38,9 +45,9 @@ int main(int argc, char* argv[]) {
 	running = 1;
 	while(running) {
 		// for DEBUG, otherwise the print formatting below will overwrite any debug
-//		 printf("\r[D] Reads Speed1: %d, Speed2: %d, Speed3: %d, Speed4: %d, Altitude: %d\n", ((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3], ((int*)ptr)[4]);
-//		 fflush(stdout);
-//		 sleep(1);
+		// printf("\r[D] Reads Speed1: %d, Speed2: %d, Speed3: %d, Speed4: %d, Altitude: %d\n", ((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3], ((int*)ptr)[4]);
+		// fflush(stdout);
+		// sleep(1);
 
 		// cleaner output but will overwrite any debug print statements
 	    clear();
@@ -51,7 +58,7 @@ int main(int argc, char* argv[]) {
 	    		"\n"
 	    		"Altitude: %d meters\n"
 	    		"Current Command: %s",
-				((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3], ((int*)ptr)[4], command);
+				prop_speeds[0], prop_speeds[1], prop_speeds[2], prop_speeds[3], *altitude, command_buf);
 
 	    puts(output);
 	    sleep(2);
