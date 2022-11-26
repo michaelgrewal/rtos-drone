@@ -8,6 +8,7 @@
 #include <sys/mman.h>
 #include <sys/iofunc.h>
 #include <sys/dispatch.h>
+
 #include "propeller.h"
 #include "flight_controller.h"
 #include "sensor.h"
