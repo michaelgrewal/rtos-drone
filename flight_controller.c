@@ -8,6 +8,7 @@
 #include <sys/mman.h>
 
 #include "flight_controller.h"
+#include "propeller.h"
 
 // type for receiving
 typedef union
@@ -15,14 +16,14 @@ typedef union
 	uint16_t type;
 	struct _pulse pulse;
 	char rmsg[MAX_STRING_LEN];
-	get_target_speed_msg_t msg_get_target;
-	get_target_speed_resp_t resp_get_target;
-	set_target_speed_msg_t msg_set_target;
+	get_speed_msg_t msg_get;
+	get_speed_resp_t resp_get;
+	set_speeds_msg_t msg_set;
 } recv_buf_t;
 
 // Forward declarations
 int create_shared_memory(int nbytes, void **ptr);
-int calc_speed(direction_t direction, int curr_speed);
+void calc_speed(direction_t direction, int *target_speeds);
 void calculate_altitude(void *ptr);
 void setup_altitude_periodic_updates(pid_t server_pid, int chid, struct itimerspec *it, struct sigevent *se, timer_t *tID);
 
@@ -30,10 +31,10 @@ void setup_altitude_periodic_updates(pid_t server_pid, int chid, struct itimersp
 int main(int argc, char* argv[])
 {
 	int rcvid;
-	int target_speed = HOVER;
+	int target_speeds[NUM_PROPS] = { HOVER, HOVER, HOVER, HOVER };
 	char reply_msg[MAX_STRING_LEN];
 	recv_buf_t msg;
-	get_target_speed_resp_t resp_target;
+	get_speed_resp_t resp;
 	void *ptr;
 	struct sigevent sigevent;
 	struct itimerspec itime;
@@ -100,13 +101,13 @@ int main(int argc, char* argv[])
 
 			switch (msg.type)
 			{
-			case GET_TARGET_SPEED_MSG_TYPE:
-				resp_target.target = target_speed;
-				MsgReply(rcvid, EOK, &resp_target, sizeof(resp_target));
+			case GET_SPEED_MSG_TYPE:
+				resp.target = target_speeds[msg.msg_get.prop_index];
+				MsgReply(rcvid, EOK, &resp, sizeof(resp));
 				break;
 
-			case SET_TARGET_SPEED_MSG_TYPE:
-				target_speed = calc_speed(msg.msg_set_target.nav_data.direction, target_speed);
+			case SET_SPEEDS_MSG_TYPE:
+				calc_speed(msg.msg_set.nav_data.direction, target_speeds);
 				MsgReply(rcvid, EOK, NULL, 0);
 				break;
 			}
@@ -194,35 +195,64 @@ int create_shared_memory(int nbytes, void **ptr) {
 	return 0;
 }
 
-int calc_speed(direction_t direction, int curr_speed) {
-	int x_dir = (direction & NAV_LEFT	  ) - (direction & NAV_RIGHT);
-	int y_dir = (direction & NAV_FORWARD  ) - (direction & NAV_BACKWARD);
-	int z_dir = (direction & NAV_UP		  ) - (direction & NAV_DOWN);
-	int rot	  = (direction & NAV_CLOCKWISE) - (direction & NAV_CCLOCKWISE);
+void calc_speed(direction_t direction, int *target_speeds) {
+	int x_dir = (direction & LEFT	  ) - (direction & RIGHT);
+	int y_dir = (direction & FORWARD  ) - (direction & BACKWARD);
+	int z_dir = (direction & UP		  ) - (direction & DOWN);
+	int rot	  = (direction & CLOCKWISE) - (direction & CCLOCKWISE);
+
+	target_speeds[FRONT_LEFT]  = HOVER;
+	target_speeds[FRONT_RIGHT] = HOVER;
+	target_speeds[BACK_LEFT]   = HOVER;
+	target_speeds[BACK_RIGHT]  = HOVER;
 
 	if (x_dir > 0) {
-		printf("Moving left\n");
+		// Move left, decrease left RPM
+		target_speeds[FRONT_LEFT]  -= 1000;
+		target_speeds[BACK_LEFT]   -= 1000;
 	} else if (x_dir < 0) {
-		printf("Moving right\n");
+		// Move right, decrease right RPM
+		target_speeds[FRONT_RIGHT] -= 1000;
+		target_speeds[BACK_RIGHT]  -= 1000;
 	}
 
 	if (y_dir > 0) {
-		printf("Moving forwards\n");
+		// Move forwards, decrease front RPM
+		target_speeds[FRONT_LEFT]  -= 1000;
+		target_speeds[FRONT_RIGHT] -= 1000;
 	} else if (x_dir < 0) {
-		printf("Moving backwards\n");
+		// Move backwards, decrease back RPM
+		target_speeds[BACK_LEFT]   -= 1000;
+		target_speeds[BACK_RIGHT]  -= 1000;
 	}
 
 	if (z_dir > 0) {
-		printf("Moving up\n");
+		// Move up, increase all RPM
+		target_speeds[FRONT_LEFT]  += 1000;
+		target_speeds[FRONT_RIGHT] += 1000;
+		target_speeds[BACK_LEFT]   += 1000;
+		target_speeds[BACK_RIGHT]  += 1000;
 	} else if (x_dir < 0) {
-		printf("Moving down\n");
+		// Move down, decrease all RPM
+		target_speeds[FRONT_LEFT]  -= 1000;
+		target_speeds[FRONT_RIGHT] -= 1000;
+		target_speeds[BACK_LEFT]   -= 1000;
+		target_speeds[BACK_RIGHT]  -= 1000;
 	}
 
 	if (rot > 0) {
-		printf("Rotating cw\n");
+		// Rotate clockwise, decrease front right and back left,
+		// increase front left and back right
+		target_speeds[FRONT_LEFT]  += 1000;
+		target_speeds[FRONT_RIGHT] -= 1000;
+		target_speeds[BACK_LEFT]   -= 1000;
+		target_speeds[BACK_RIGHT]  += 1000;
 	} else if (x_dir < 0) {
-		printf("Rotating ccw\n");
+		// Rotate counter clockwise, increase front right and back left,
+		// decrease front left and back right
+		target_speeds[FRONT_LEFT]  -= 1000;
+		target_speeds[FRONT_RIGHT] += 1000;
+		target_speeds[BACK_LEFT]   += 1000;
+		target_speeds[BACK_RIGHT]  -= 1000;
 	}
-
-	return curr_speed + 1000;
 }

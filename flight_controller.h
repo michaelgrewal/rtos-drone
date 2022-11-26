@@ -30,22 +30,23 @@
 #define _PULSE_CODE_TIMER_ALTITUDE_UPDATE	(_PULSE_CODE_MINAVAIL + 5)
 
 // MESSAGE CODES
-#define GET_TARGET_SPEED_MSG_TYPE	(_IO_MAX + 1)
-#define SET_TARGET_SPEED_MSG_TYPE	(_IO_MAX + 2)
+#define GET_SPEED_MSG_TYPE	(_IO_MAX + 1)
+#define SET_SPEEDS_MSG_TYPE	(_IO_MAX + 2)
 
-typedef struct get_target_speed_msg {
+typedef struct get_speed_msg {
 	uint16_t type;
-} get_target_speed_msg_t;
+	uint8_t prop_index;
+} get_speed_msg_t;
 
-typedef struct get_target_speed_resp {
+typedef struct get_speed_resp {
 	unsigned target;
-} get_target_speed_resp_t;
+} get_speed_resp_t;
 
-typedef struct set_target_speed_msg {
+typedef struct set_speeds_msg {
 	uint16_t type;
 	nav_data_t nav_data;
-} set_target_speed_msg_t;
+} set_speeds_msg_t;
 
-//no response needed for set_target_speed
+//no response needed for set_speeds
 
 #endif /* FLIGHT_CONTROLLER_H_ */

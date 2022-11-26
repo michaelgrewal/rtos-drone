@@ -11,7 +11,11 @@
 #include "propeller.h"
 #include "flight_controller.h"
 
-// forward declarations for thread functions
+// forward declarations for functions
+int get_target_speed_from_server(int coid, int index);
+void update_shmem(void* ptr, int speed);
+void adjust_speed_to_target(int speed, int target, void* ptr);
+
 void *update_propeller(void *);
 void *wind(void *);
 
@@ -20,7 +24,7 @@ pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex3 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex4 = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t *mutexes[] = {&mutex1, &mutex2, &mutex3, &mutex4};
+pthread_mutex_t *mutexes[] = { &mutex1, &mutex2, &mutex3, &mutex4 };
 
 int main(void) {
 	// arrays for each thread's function
@@ -69,6 +73,7 @@ int main(void) {
 		thread_args[i].ptr = ptr;
 		thread_args[i].coid = coid;
 		thread_args[i].mutex = mutexes[i];
+		thread_args[i].prop_index = (propeller_index_t)(i);
 
 		// create attr for ROUND ROBIN scheduling and create thread
 		pthread_attr_t attr;
@@ -95,10 +100,11 @@ int main(void) {
 
 
 // get the target speed, what the propeller should be spinning at, from the server
-int get_target_speed_from_server(int coid) {
-	get_target_speed_msg_t msg_target;
-	get_target_speed_resp_t resp_target;
-	msg_target.type = GET_TARGET_SPEED_MSG_TYPE;
+int get_target_speed_from_server(int coid, int index) {
+	get_speed_msg_t msg_target;
+	get_speed_resp_t resp_target;
+	msg_target.type = GET_SPEED_MSG_TYPE;
+	msg_target.prop_index = index;
 	MsgSend(coid, &msg_target, sizeof(msg_target), &resp_target, sizeof(resp_target));
 	return resp_target.target;
 }
@@ -133,7 +139,7 @@ void *update_propeller(void *args) {
 		pthread_mutex_lock(th_args->mutex);
 
 		speed = *(int *)th_args->ptr;
-		target = get_target_speed_from_server(th_args->coid);
+		target = get_target_speed_from_server(th_args->coid, th_args->prop_index);
 		adjust_speed_to_target(speed, target, th_args->ptr);
 
 		pthread_mutex_unlock(th_args->mutex);

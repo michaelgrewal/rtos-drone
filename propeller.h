@@ -9,12 +9,23 @@
 
 const char *shmem_props[] = {"prop1", "prop2", "prop3", "prop4"};
 
+typedef enum {
+	FRONT_LEFT  = 0,
+	FRONT_RIGHT = 1,
+	BACK_LEFT   = 2,
+	BACK_RIGHT  = 3
+} propeller_index_t;
+
 typedef struct {
 	void *ptr;
 	int coid;
 	union {
 		int8_t prop_code;
-		pthread_mutex_t *mutex;
+		struct {
+			pthread_mutex_t *mutex;
+			propeller_index_t prop_index;
+		};
+		
 	};
 } thread_args_t;
 

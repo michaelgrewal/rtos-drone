@@ -10,10 +10,15 @@
 
 int main(int argc, char **argv) {
     int coid;
+
+    if (argc == 1) {
+    	printf("No argument provided!\n");
+    	return EXIT_FAILURE;
+    }
     
-    set_target_speed_msg_t msg;
-    msg.type = SET_TARGET_SPEED_MSG_TYPE;
-    msg.nav_data.direction = 0;
+    set_speeds_msg_t msg;
+    msg.type = SET_SPEEDS_MSG_TYPE;
+    msg.nav_data.direction = atoi(argv[1]); // Hackjob for now to not have to recompile. Will add a file later
     msg.nav_data.duration = 0;
 
     coid = name_open(SERVER_NAME, 0);
