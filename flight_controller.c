@@ -167,8 +167,8 @@ void calculate_altitude(int *prop_speeds, int* altitude) {
 	if (speed1 > HOVER && speed2 > HOVER && speed3 > HOVER && speed4 > HOVER) {
 		*altitude += ALTITUDE_RATE;
 	}
-	// else if all propellers are below HOVER then drone is descending in altitude
-	else if (speed1 < HOVER && speed2 < HOVER && speed3 < HOVER && speed4 < HOVER && altitude > 0) {
+	// else if any propeller is below HOVER then drone is descending in altitude
+	else if (*altitude > 0 && (speed1 < HOVER || speed2 < HOVER || speed3 < HOVER || speed4 < HOVER)) {
 		*altitude -= ALTITUDE_RATE;
 	}
 }
