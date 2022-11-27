@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
 	int i, status;
 
 	// array of all procs that need to start
-	char * const procs[] = {"flight_controller", "display", "propeller", "sensor"};
+	char * const procs[] = {"navigation", "flight_controller", "display", "propeller", "sensor"};
 	const char *proc;
 	size_t len = sizeof(procs) / sizeof(procs[0]);
 
