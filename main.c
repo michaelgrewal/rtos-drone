@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 
 		if (argc > 1){
 			// nowind arg to disable wind
-			if (0 == strcmp(argv[1], "nowind")){
+			if (0 == strcmp(argv[1], ARG_NO_WIND)){
 				strcpy(argument1, argv[1]);
 			}
 			else {
