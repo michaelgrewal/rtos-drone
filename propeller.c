@@ -8,6 +8,7 @@
 #include <sys/mman.h>
 #include <sys/iofunc.h>
 #include <sys/dispatch.h>
+#include <string.h>
 #include "propeller.h"
 #include "flight_controller.h"
 
@@ -27,7 +28,12 @@ pthread_mutex_t *mutexes[] = { &mutex1, &mutex2, &mutex3, &mutex4 };
 
 
 
-int main(void) {
+int main(int argc, char** argv) {
+	int enable_wind = 0;
+	if (0 != strcmp(argv[1], "nowind")) {
+		enable_wind = 1;
+	}
+
 	// arrays for each thread's function
 	thread_args_t thread_args[NUM_PROPS];
 	pthread_t tids[NUM_PROPS];
@@ -84,10 +90,12 @@ int main(void) {
 	}
 
 	// thread to simulate wind
-	pthread_attr_t attr;
-	pthread_attr_init(&attr);
-	pthread_attr_setschedpolicy(&attr, SCHED_RR);
-	pthread_create(NULL, &attr, &wind, (void *)ptrs);
+	if (enable_wind) {
+		pthread_attr_t attr;
+		pthread_attr_init(&attr);
+		pthread_attr_setschedpolicy(&attr, SCHED_RR);
+		pthread_create(NULL, &attr, &wind, (void *)ptrs);
+	}
 
 	for(i = 0; i < NUM_PROPS; ++i) {
 		pthread_join(tids[i], NULL);
