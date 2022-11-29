@@ -1,6 +1,7 @@
 #ifndef NAVIGATION_H_
 #define NAVIGATION_H_
 
+// binary codes representing each command
 typedef enum {
     MAINTAIN    = 0b00000000,
     UP          = 0b00000001,
@@ -13,9 +14,5 @@ typedef enum {
     CCLOCKWISE  = 0b10000000
 } direction_t;
 
-typedef struct {
-    direction_t direction;
-    unsigned duration;
-} nav_data_t;
 
 #endif /* NAVIGATION_H_ */

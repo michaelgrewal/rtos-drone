@@ -20,8 +20,7 @@ int main(int argc, char* argv[]) {
 	int *altitude;
 	char *command_buf;
 
-	char output[MAX_STRING_LEN];
-//	printf("[D] Hi I'm display HUD.\n");
+	char output[PAGE_SIZE];
 
 	// open named shared memory in read-only mode
 	fd = shm_open(SHM_NAME, O_RDONLY, 0);
@@ -33,6 +32,7 @@ int main(int argc, char* argv[]) {
 	// map the shared memory
 	ptr = mmap(NULL, PAGE_SIZE, PROT_READ, MAP_SHARED, fd, 0);
 	
+	// Get drone data in shared memory
 	prop_speeds = ptr + PROP_OFFSET;
 	altitude = ptr + ALTITUDE_OFFSET;
 	command_buf = ptr + COMMAND_OFFSET;
@@ -41,13 +41,12 @@ int main(int argc, char* argv[]) {
 	close(fd);
 
 	// keep updating the HUD in-line periodically
-	// TODO should show the current command too
 	running = 1;
 	while(running) {
-		// for DEBUG, otherwise the print formatting below will overwrite any debug
-		// printf("\r[D] Reads Speed1: %d, Speed2: %d, Speed3: %d, Speed4: %d, Altitude: %d\n", ((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3], ((int*)ptr)[4]);
-		// fflush(stdout);
-		// sleep(1);
+//		 for DEBUG, otherwise the print formatting below will overwrite any debug
+//		 printf("\r[D] Reads Speed1: %d, Speed2: %d, Speed3: %d, Speed4: %d, Altitude: %d\n", ((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3], ((int*)ptr)[4]);
+//		 fflush(stdout);
+//		 sleep(1);
 
 		// cleaner output but will overwrite any debug print statements
 	    clear();
@@ -65,14 +64,17 @@ int main(int argc, char* argv[]) {
 	    goto_x_y(0, 0);
 	}
 
+	// cleanup
 	munmap(ptr, PAGE_SIZE);
     return EXIT_SUCCESS;
 }
 
+// clears the terminal
 void clear() {
 	printf("\033[H\033[J");
 }
 
+// goto x y position in terminal
 void goto_x_y(unsigned x, unsigned y) {
 	printf("\033[%d;%dH", x, y);
 }

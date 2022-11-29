@@ -25,7 +25,6 @@ int main(void) {
 	void *ptr;
 	thread_args_t thread_args[NUM_PROPS];
 	pthread_t tids[NUM_PROPS];
-//	printf("[S] Hi I'm sensor.\n");
 
 	coid = name_open(SERVER_NAME, 0);
 
@@ -60,7 +59,6 @@ int main(void) {
 		pthread_create(&tids[i], &attr, sensor, (void *)(&thread_args[i]));
 	}
 
-	//sleep(STAY_ALIVE_TIME); 	// TODO (maybe pthread join to wait for them instead)
 	for (i = 0; i < NUM_PROPS; ++i) {
 		pthread_join(tids[i], NULL);
 		munmap(thread_args[i].ptr, sizeof(int));
@@ -70,6 +68,8 @@ int main(void) {
 
 	return EXIT_SUCCESS;
 }
+
+
 
 // read updated speed value and send pulse to server
 void send_speed_to_server(int coid, void *ptr, int code) {
@@ -86,6 +86,8 @@ void send_speed_to_server(int coid, void *ptr, int code) {
 	sleep(1);
 }
 
+
+// repeatedly send Propeller speed readings to the Flight Controller
 void *sensor(void *args) {
 	thread_args_t *th_args = args;
 

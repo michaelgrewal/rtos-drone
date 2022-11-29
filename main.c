@@ -51,6 +51,7 @@ int main(int argc, char **argv) {
 	return EXIT_SUCCESS;
 }
 
+// get process name
 const char *get_proc_name(char * const *procs, pid_t *pids, size_t len, pid_t pid) {
 	size_t i;
 	for(i = 0; i < len; ++i) {

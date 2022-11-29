@@ -11,11 +11,10 @@
 #include "propeller.h"
 #include "flight_controller.h"
 
-// forward declarations for functions
+/* FORWARD DECLARATIONS */
 int get_target_speed_from_server(int coid, int index);
 void update_shmem(void* ptr, int speed);
 void adjust_speed_to_target(int speed, int target, void* ptr);
-
 void *update_propeller(void *);
 void *wind(void *);
 
@@ -25,6 +24,8 @@ pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex3 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex4 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t *mutexes[] = { &mutex1, &mutex2, &mutex3, &mutex4 };
+
+
 
 int main(void) {
 	// arrays for each thread's function
@@ -36,7 +37,6 @@ int main(void) {
 
 	int fd, i, coid;
 	void *ptr;
-//	printf("[P] Hi I'm propeller client.\n");
 
 	coid = name_open(SERVER_NAME, 0);
 
@@ -126,10 +126,13 @@ void adjust_speed_to_target(int speed, int target, void* ptr) {
 			speed -= RATE;
 		}
 		update_shmem(ptr, speed);
+
+		// introduce some waiting time to simulate the time taken to change Propeller speeds or else it's too instantaneous
 		usleep(ADJUST_SPEED_INTERVAL_MICROSEC);
 	}
 }
 
+// update Propeller speed by requesting target speed from Flight Controller and matching it
 void *update_propeller(void *args) {
 	thread_args_t *th_args = args;
 	int speed, target;
@@ -146,6 +149,8 @@ void *update_propeller(void *args) {
 		sleep(PROP_WAIT);
 	}
 }
+
+
 
 // random wind simulation to show system reacting and adjusting in real-time, using mutex to prevent collisions (race conditions)
 void* wind(void* args) {
