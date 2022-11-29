@@ -22,11 +22,26 @@ int main(int argc, char **argv) {
 	pid_t pids[len];
 	pid_t pid;
 
+	struct inheritance	inherit;
+	inherit.flags = 0;
+	char argument1[BUF_SIZE];
+
 	// spawn each subprocess
 	for(i = 0; i < len; i++) {
-		char * const args[] = { procs[i], NULL };
 
-		if ((pid = spawn(procs[i], 0, NULL, NULL, args, NULL)) == -1)
+		if (argc > 1){
+			// nowind arg to disable wind
+			if (0 == strcmp(argv[1], "nowind")){
+				strcpy(argument1, argv[1]);
+			}
+			else {
+				perror("Invalid arguments to main");
+			}
+		}
+
+		char * args[] = { procs[i], argument1, NULL };
+
+		if ((pid = spawn(procs[i], 0, NULL, &inherit, args, environ)) == -1)
 			perror("spawn() failed");
 
 		pids[i] = pid;
