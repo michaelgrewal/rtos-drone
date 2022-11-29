@@ -8,6 +8,7 @@
 #include "navigation.h"
 #include "flight_controller.h"
 
+
 int main(int argc, char **argv) {
     int coid;
 	FILE *fp;
@@ -18,20 +19,25 @@ int main(int argc, char **argv) {
 	int duration;
 	int command;
 
+	// open connection with Flight Controller
 	coid = name_open(SERVER_NAME, 0);
+
+	// open file with input commands
 	fp = fopen( "input.txt", "r" );
 
 	if( fp != NULL ) {
 
 		// get line by line file for reading
 		while( fgets(line,1024,fp) ) {
+
 			// split the data in the line into direction and duration
 			command = sscanf(line, "%s %d", direction, &duration);
 			if (command == 2) {
 				msg.type = SET_SPEEDS_MSG_TYPE;
-				msg.nav_data.direction = atoi(direction); // Hackjob for now to not have to recompile. Will add a file later
+				msg.nav_data.direction = atoi(direction);
 				msg.nav_data.duration = duration;
 
+				// send direction to Flight Controller and sleep for duration then send next command
 				MsgSend(coid, &msg, sizeof(msg), NULL, 0);
 				sleep(duration);
 			 }
@@ -39,9 +45,10 @@ int main(int argc, char **argv) {
 				 printf("Failed to scan all values\n");
 			 }
 		}
-		fclose( fp );
+		fclose(fp);
 	}
 
+	// close connection
     name_close(coid);
 
     return EXIT_SUCCESS;
