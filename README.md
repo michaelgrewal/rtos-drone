@@ -21,3 +21,4 @@ Explanation:
 - Flight Controller writes the received speeds into the shared memory, such that Display can update the values.
 - Random gusts of wind are delivered to propellers that changes their speeds, and the system reacts accordingly to restore target speeds.
 - Periodic timeouts to simulate altitude sensors. Flight controller periodically updates altitude and Display updates the HUD.
+- Navigation reads from input.txt (int direction, int duration) commands.
