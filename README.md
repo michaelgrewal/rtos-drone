@@ -8,6 +8,7 @@ Instructions:
 4. Click "Build Project".
 5. Copy all executable binaries into target VM.
 6. Run "./main" on target VM.
+Optional: To disable wind run with argument: "./main nowind"
 
 Explanation:
 
