@@ -45,6 +45,13 @@ int main(int argc, char **argv) {
 				 printf("Failed to scan all values\n");
 			 }
 		}
+
+		// end of commands, just put drone into maintain (hover) mode
+		msg.type = SET_SPEEDS_MSG_TYPE;
+		msg.nav_data.direction = 0;
+		msg.nav_data.duration = 0;
+		MsgSend(coid, &msg, sizeof(msg), NULL, 0);
+
 		fclose(fp);
 	}
 
