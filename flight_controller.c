@@ -360,16 +360,16 @@ void backwards(int *target_speeds, char *command_buf, size_t *offset) {
 }
 // change Propeller speeds to rotate CLOCKWISE
 void clockwise(int *target_speeds, char *command_buf, size_t *offset) {
-	target_speeds[FRONT_LEFT]  -= MOVE;
-	target_speeds[FRONT_RIGHT] += MOVE;
+	target_speeds[FRONT_LEFT]  += MOVE;
+	target_speeds[FRONT_RIGHT] -= MOVE;
 	target_speeds[BACK_LEFT]   -= MOVE;
 	target_speeds[BACK_RIGHT]  += MOVE;
 	write_command("CW ", command_buf, offset);
 }
 // change Propeller speeds to rotate COUNTER CLOCKWISE
 void cclockwise(int *target_speeds, char *command_buf, size_t *offset) {
-	target_speeds[FRONT_LEFT]  += MOVE;
-	target_speeds[FRONT_RIGHT] -= MOVE;
+	target_speeds[FRONT_LEFT]  -= MOVE;
+	target_speeds[FRONT_RIGHT] += MOVE;
 	target_speeds[BACK_LEFT]   += MOVE;
 	target_speeds[BACK_RIGHT]  -= MOVE;
 	write_command("CCW ", command_buf, offset);

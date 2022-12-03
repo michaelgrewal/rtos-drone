@@ -51,16 +51,16 @@ int main(int argc, char* argv[]) {
 		// cleaner output but will overwrite any debug print statements
 	    clear();
 	    sprintf(output,
-	    		"Propeller 1 (CCW): %5d RPM\t | \tPropeller 2 (CW) : %5d RPM\n"
+	    		"Propeller 1 (CW) : %5d RPM\t | \tPropeller 2 (CCW): %5d RPM\n"
 	    		            "\t\t\t--------------------\n"
-	    		"Propeller 3 (CW) : %5d RPM\t | \tPropeller 4 (CCW): %5d RPM\n"
+	    		"Propeller 3 (CCW): %5d RPM\t | \tPropeller 4 (CW) : %5d RPM\n"
 	    		"\n"
 	    		"Altitude: %d meters\n"
 	    		"Current Command: %s",
 				prop_speeds[0], prop_speeds[1], prop_speeds[2], prop_speeds[3], *altitude, command_buf);
 
 	    puts(output);
-	    sleep(2);
+	    usleep(UPDATE_DISPLAY_MICROSEC);
 	    goto_x_y(0, 0);
 	}
 
