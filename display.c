@@ -43,10 +43,6 @@ int main(int argc, char* argv[]) {
 	// keep updating the HUD in-line periodically
 	running = 1;
 	while(running) {
-//		 for DEBUG, otherwise the print formatting below will overwrite any debug
-//		 printf("\r[D] Reads Speed1: %d, Speed2: %d, Speed3: %d, Speed4: %d, Altitude: %d\n", ((int*)ptr)[0], ((int*)ptr)[1], ((int*)ptr)[2], ((int*)ptr)[3], ((int*)ptr)[4]);
-//		 fflush(stdout);
-//		 sleep(1);
 
 		// cleaner output but will overwrite any debug print statements
 	    clear();
