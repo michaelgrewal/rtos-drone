@@ -166,10 +166,9 @@ void* wind(void* args) {
 	int rand1, rand2, rand3, rand4, new_speed1, new_speed2, new_speed3, new_speed4, i;
 	time_t t;
 	srand((unsigned) time(&t));
+	sleep(5);
 
 	while (1){
-		// gust of wind hits all propellers every (sleep) seconds
-		sleep(WIND_INTERVAL_SEC);
 
 		// generate random speeds between 0 and MAX_RPM
 		rand1 = (rand() % MAX_RPM+1);
@@ -196,6 +195,9 @@ void* wind(void* args) {
 		for (int i = 0; i < NUM_PROPS; i++) {
 			pthread_mutex_unlock(mutexes[i]);
 		}
+
+		// gust of wind hits all propellers every (sleep) seconds
+		sleep(WIND_INTERVAL_SEC);
 	}
 }
 
